@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <title>Unsecured Embed — IBM wxO Chat Demo</title>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       Content Security Policy — intentionally permissive for this LOCAL
+       DEMO page.  A tight whitelist blocked the wxO widget's own CSS/font
+       assets (served from *.watson.appdomain.cloud and other CDN subdomains),
+       producing an unstyled raw DOM with no colours or icons.
+
+       For a production deployment, tighten this after capturing the full
+       asset origin list from browser DevTools Network → "Blocked by CSP".
+  ──────────────────────────────────────────────────────────────────────── -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+  " />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --ibm-blue:       #0f62fe;
+      --ibm-blue-hover: #0353e9;
+      --ibm-green:      #24a148;
+      --ibm-yellow:     #f1c21b;
+      --ibm-red:        #da1e28;
+      --ibm-orange:     #ff6b35;
+      --bg:             #ffffff;
+      --bg-subtle:      #f4f4f4;
+      --border:         #e0e0e0;
+      --text:           #161616;
+      --text-subtle:    #525252;
+      --mono:           'IBM Plex Mono', monospace;
+      --sans:           'IBM Plex Sans', system-ui, sans-serif;
+      --radius:         4px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    a { color: var(--ibm-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre { font-family: var(--mono); }
+
+    /* ── Topbar ── */
+    .topbar {
+      background: var(--text);
+      color: #fff;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .topbar-badge {
+      background: #198038;
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+    }
+    .topbar-links { margin-left: auto; display: flex; gap: 16px; }
+    .topbar-links a { color: #c6c6c6; }
+    .topbar-links a:hover { color: #fff; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #001141 0%, #0f1f4d 60%, #001d6c 100%);
+      color: #fff;
+      padding: 56px 40px 48px;
+    }
+    .hero-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #78a9ff;
+      margin-bottom: 12px;
+    }
+    .hero h1 { font-size: clamp(26px, 4vw, 40px); font-weight: 300; line-height: 1.2; margin-bottom: 16px; }
+    .hero h1 strong { font-weight: 600; color: #78a9ff; }
+    .hero-desc { max-width: 600px; color: #c6c6c6; font-size: 16px; margin-bottom: 28px; }
+    .badge-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    }
+    .badge-green  { background: rgba(36,161,72,.2);  color: #42be65; border: 1px solid rgba(36,161,72,.4); }
+    .badge-yellow { background: rgba(241,194,27,.2); color: #f1c21b; border: 1px solid rgba(241,194,27,.4); }
+    .badge-blue   { background: rgba(15,98,254,.2);  color: #78a9ff; border: 1px solid rgba(15,98,254,.4); }
+
+    /* ── Layout ── */
+    .content { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+    section { margin-bottom: 48px; }
+    h2 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+    p  { color: var(--text-subtle); margin-bottom: 12px; line-height: 1.7; }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-left: 4px solid;
+      padding: 14px 18px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .callout-green  { border-color: var(--ibm-green);  background: #defbe6; color: #0e6027; }
+    .callout-yellow { border-color: var(--ibm-yellow); background: #fdf6c3; color: #7a4c00; }
+    .callout-blue   { border-color: var(--ibm-blue);   background: #edf5ff; color: #001d6c; }
+    .callout strong { font-weight: 600; }
+
+    /* ── Steps ── */
+    .steps { counter-reset: step; list-style: none; }
+    .steps li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+      align-items: start;
+    }
+    .steps li::before {
+      content: counter(step);
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--ibm-blue);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 14px;
+      flex-shrink: 0;
+    }
+    .step-body h3 { margin-bottom: 4px; }
+    .step-body p  { margin-bottom: 6px; }
+
+    /* ── Code blocks ── */
+    .code-wrap {
+      background: #161616;
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-header {
+      background: #262626;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #c6c6c6;
+    }
+    .code-header span { font-family: var(--mono); font-size: 11px; color: #8d8d8d; }
+    .copy-btn {
+      background: none; border: 1px solid #525252;
+      color: #c6c6c6; cursor: pointer; padding: 3px 10px;
+      border-radius: var(--radius); font-size: 11px;
+      transition: all .15s;
+    }
+    .copy-btn:hover { background: #393939; border-color: #c6c6c6; }
+    pre.code {
+      padding: 20px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f4f4f4;
+      margin: 0;
+    }
+    .c-comment { color: #6f6f6f; }
+    .c-key     { color: #78a9ff; }
+    .c-str     { color: #42be65; }
+    .c-kw      { color: #ff7eb6; }
+    .c-fn      { color: #ee5396; }
+    .c-num     { color: #ff832b; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+    .tab-btn {
+      padding: 10px 20px;
+      background: none; border: none;
+      font-family: var(--sans); font-size: 14px; font-weight: 500;
+      color: var(--text-subtle); cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .15s;
+    }
+    .tab-btn.active { color: var(--ibm-blue); border-bottom-color: var(--ibm-blue); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Chat preview ── */
+    .chat-preview {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-subtle);
+    }
+    .chat-preview-bar {
+      background: var(--text); color: #fff;
+      padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 500;
+    }
+    .chat-preview-body { padding: 24px; min-height: 180px; display: flex; align-items: center; justify-content: center; }
+    .chat-preview-hint { text-align: center; color: var(--text-subtle); font-size: 13px; }
+    .chat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ibm-green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex; align-items: center; gap: 0;
+      flex-wrap: wrap; margin: 20px 0;
+    }
+    .flow-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 13px;
+      min-width: 120px;
+    }
+    .flow-box strong { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .flow-box span   { color: var(--text-subtle); font-size: 11px; }
+    .flow-arrow { font-size: 20px; color: var(--text-subtle); padding: 0 6px; }
+    .flow-box.highlight { background: #edf5ff; border-color: var(--ibm-blue); }
+    .flow-box.warn      { background: #fdf6c3; border-color: var(--ibm-yellow); }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; }
+    .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 14px; }
+    .checklist li::before { content: '✓'; color: var(--ibm-green); font-weight: 700; flex-shrink: 0; }
+    .checklist li.x::before { content: '✗'; color: var(--ibm-red); }
+    .checklist li.warn::before { content: '⚠'; color: var(--ibm-yellow); font-size: 12px; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--text); color: #c6c6c6;
+      padding: 24px 40px; font-size: 13px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    footer a { color: #78a9ff; }
+    .nav-strip {
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex; gap: 24px; align-items: center; font-size: 13px;
+    }
+    .nav-strip a { color: var(--text-subtle); }
+    .nav-strip a:hover { color: var(--ibm-blue); }
+    .nav-strip a.current { color: var(--ibm-blue); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- ── Top navigation ── -->
+<div class="topbar">
+  <span style="font-weight:600">IBM wxO Embedded Chat</span>
+  <span class="topbar-badge">UNSECURED</span>
+  <div class="topbar-links">
+    <a href="index.html">Home</a>
+    <a href="embed-docs.html">Docs Hub</a>
+    <a href="demo-secured.html">Secured Demo →</a>
+  </div>
+</div>
+
+<div class="nav-strip">
+  <a href="embed-docs.html">← Back to Docs Hub</a>
+  <a href="demo-unsecured.html" class="current">Unsecured Embed</a>
+  <a href="demo-secured.html">Secured Embed (JWT)</a>
+</div>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <p class="hero-label">Mode 1 of 2</p>
+  <h1>Unsecured Embed — <strong>Anonymous Access</strong></h1>
+  <p class="hero-desc">
+    No JWT, no RSA keys, no backend server required.
+    The wxO chat widget loads and authenticates automatically once you disable
+    embed security on your wxO tenant.
+  </p>
+  <div class="badge-row">
+    <span class="badge badge-green">✓ Simplest setup</span>
+    <span class="badge badge-blue">→ 1 prerequisite: disable security on wxO tenant</span>
+    <span class="badge badge-yellow">⚠ Anonymous — no user identity</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: What is the unsecured mode?
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>What is unsecured embed?</h2>
+    <p>
+      By default IBM watsonx Orchestrate has embed security <strong>enabled</strong>, which
+      requires every chat request to carry a signed JWT.  When you <em>disable</em>
+      that setting, the widget performs anonymous authentication automatically —
+      no keys, no backend, no token signing required.
+    </p>
+
+    <div class="callout callout-yellow">
+      <strong>⚠ When to use this mode:</strong> public demos, internal prototypes,
+      chatbots with no access to sensitive data or credentials.  Never use unsecured
+      mode when the agent has access to enterprise systems, PII, or OAuth connections.
+    </div>
+
+    <!-- Auth flow diagram -->
+    <h3 style="margin-top:24px">Authentication flow</h3>
+    <div class="flow">
+      <div class="flow-box"><strong>Browser</strong><span>loads page</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><strong>wxoLoader.js</strong><span>fetched from wxO CDN</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><strong>wxoLoader.init()</strong><span>reads wxOConfiguration</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box warn"><strong>anon token</strong><span>issued by wxO (security OFF)</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><strong>Chat widget</strong><span>renders ✓</span></div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Prerequisites
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Prerequisites — one-time tenant configuration</h2>
+    <p>
+      You only need to do this <strong>once</strong> per wxO instance.
+      After this the embed script below will work immediately.
+    </p>
+
+    <ol class="steps">
+      <li>
+        <div class="step-body">
+          <h3>Log in to your wxO instance</h3>
+          <p>Open
+            <a href="https://eu-de.watson-orchestrate.cloud.ibm.com" target="_blank" rel="noopener">
+              https://eu-de.watson-orchestrate.cloud.ibm.com
+            </a>
+            and sign in with your IBM Cloud credentials.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Open Administration → Settings</h3>
+          <p>
+            Click your <strong>profile icon</strong> in the top-right corner,
+            then select <strong>Administration</strong> → <strong>Settings</strong>
+            from the navigation menu.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Click the "Embed Security" tab</h3>
+          <p>You will see a Security toggle and a Public key field.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Toggle Security to OFF</h3>
+          <p>
+            Click the <strong>Security switch</strong> to turn it <strong>OFF</strong>.
+            A warning dialog will appear — confirm the action.
+          </p>
+          <div class="callout callout-yellow">
+            <strong>Warning from IBM:</strong> Disabling security allows any
+            website to embed and use your agent without authentication.
+            Only do this for demo/anonymous use cases.
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Save and verify</h3>
+          <p>
+            Click <strong>Save</strong>.  The widget on this page will now load
+            successfully — try clicking the chat bubble below.
+          </p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: The embed code (tabbed)
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Embed code</h2>
+    <p>
+      This is the <em>complete</em> client-side code to embed the chat widget.
+      There is no backend requirement — everything runs in the browser.
+    </p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" role="tab" onclick="switchTab(this,'tab-min')">Minimal (10 lines)</button>
+      <button class="tab-btn" role="tab" onclick="switchTab(this,'tab-full')">Full with error handling</button>
+      <button class="tab-btn" role="tab" onclick="switchTab(this,'tab-standalone')">Standalone HTML file</button>
+    </div>
+
+    <!-- Minimal -->
+    <div id="tab-min" class="tab-panel active">
+      <div class="code-wrap">
+        <div class="code-header">
+          <span>HTML / JavaScript</span>
+          <button class="copy-btn" onclick="copyCode('code-min')">Copy</button>
+        </div>
+        <pre id="code-min" class="code"><span class="c-comment">&lt;!-- 1. Add a container div where the widget will render --&gt;</span>
+<span class="c-kw">&lt;div</span> <span class="c-key">id</span>=<span class="c-str">"wxo-chat-root"</span><span class="c-kw">&gt;&lt;/div&gt;</span>
+
+<span class="c-comment">&lt;!-- 2. Paste this script near &lt;/body&gt; --&gt;</span>
+<span class="c-kw">&lt;script&gt;</span>
+  window.wxOConfiguration = {
+    <span class="c-key">orchestrationID</span>: <span class="c-str">"e65910fa61ce9072d64902d03f3d4774_75c2cabb-2b02-4d65-8127-a9cc65d1ee46"</span>,
+    <span class="c-key">hostURL</span>:         <span class="c-str">"https://eu-de.watson-orchestrate.cloud.ibm.com"</span>,
+    <span class="c-key">rootElementID</span>:   <span class="c-str">"wxo-chat-root"</span>,
+    <span class="c-key">showLauncher</span>:    <span class="c-num">true</span>,
+    <span class="c-key">crn</span>:             <span class="c-str">"crn:v1:bluemix:public:watsonx-orchestrate:eu-de:a/..."</span>,
+    <span class="c-key">deploymentPlatform</span>: <span class="c-str">"ibmcloud"</span>,
+    <span class="c-key">chatOptions</span>: {
+      <span class="c-key">agentId</span>:            <span class="c-str">"5c3c69c8-be40-44c8-9681-3e7f21c64072"</span>,
+      <span class="c-key">agentEnvironmentId</span>: <span class="c-str">"dba7f186-fe9b-4d42-9735-ba2601645aac"</span>
+    }
+  };
+  <span class="c-fn">setTimeout</span>(<span class="c-kw">function</span>() {
+    <span class="c-kw">const</span> s = document.<span class="c-fn">createElement</span>(<span class="c-str">"script"</span>);
+    s.src = window.wxOConfiguration.hostURL + <span class="c-str">"/wxochat/wxoLoader.js?embed=true"</span>;
+    s.addEventListener(<span class="c-str">"load"</span>, () => <span class="c-fn">wxoLoader</span>.<span class="c-fn">init</span>());
+    document.head.<span class="c-fn">appendChild</span>(s);
+  }, <span class="c-num">0</span>);
+<span class="c-kw">&lt;/script&gt;</span></pre>
+      </div>
+    </div>
+
+    <!-- Full -->
+    <div id="tab-full" class="tab-panel">
+      <div class="code-wrap">
+        <div class="code-header">
+          <span>JavaScript — webchat-config.js</span>
+          <button class="copy-btn" onclick="copyCode('code-full')">Copy</button>
+        </div>
+        <pre id="code-full" class="code"><span class="c-comment">// ── Configuration ──────────────────────────────────────────────────────────</span>
+window.wxOConfiguration = {
+  <span class="c-key">orchestrationID</span>: <span class="c-str">"e65910fa61ce9072d64902d03f3d4774_75c2cabb-2b02-4d65-8127-a9cc65d1ee46"</span>,
+  <span class="c-key">hostURL</span>:         <span class="c-str">"https://eu-de.watson-orchestrate.cloud.ibm.com"</span>,
+  <span class="c-key">rootElementID</span>:   <span class="c-str">"wxo-chat-root"</span>,
+  <span class="c-key">showLauncher</span>:    <span class="c-num">true</span>,
+  <span class="c-key">crn</span>:             <span class="c-str">"crn:v1:bluemix:public:watsonx-orchestrate:eu-de:a/..."</span>,
+  <span class="c-key">deploymentPlatform</span>: <span class="c-str">"ibmcloud"</span>,
+  <span class="c-key">chatOptions</span>: {
+    <span class="c-key">agentId</span>:            <span class="c-str">"5c3c69c8-be40-44c8-9681-3e7f21c64072"</span>,
+    <span class="c-key">agentEnvironmentId</span>: <span class="c-str">"dba7f186-fe9b-4d42-9735-ba2601645aac"</span>
+  }
+  <span class="c-comment">// NOTE: No identityToken callback — that is only used in the secured mode.</span>
+};
+
+<span class="c-comment">// ── Load the wxO chat widget ────────────────────────────────────────────────</span>
+<span class="c-fn">setTimeout</span>(<span class="c-kw">function</span>() {
+  <span class="c-kw">const</span> script = document.<span class="c-fn">createElement</span>(<span class="c-str">"script"</span>);
+  script.src  = window.wxOConfiguration.hostURL + <span class="c-str">"/wxochat/wxoLoader.js?embed=true"</span>;
+  script.async = <span class="c-num">true</span>;
+
+  script.<span class="c-fn">addEventListener</span>(<span class="c-str">"load"</span>, <span class="c-kw">function</span>() {
+    <span class="c-kw">if</span> (<span class="c-kw">typeof</span> wxoLoader !== <span class="c-str">"undefined"</span> && <span class="c-kw">typeof</span> wxoLoader.init === <span class="c-str">"function"</span>) {
+      wxoLoader.<span class="c-fn">init</span>();
+      console.<span class="c-fn">info</span>(<span class="c-str">"[wxO] Chat widget initialised (unsecured/anonymous mode)"</span>);
+    } <span class="c-kw">else</span> {
+      console.<span class="c-fn">error</span>(<span class="c-str">"[wxO] wxoLoader not available — check hostURL and network."</span>);
+      <span class="c-fn">showChatError</span>(<span class="c-str">"Failed to load chat loader. Check console."</span>);
+    }
+  });
+
+  script.<span class="c-fn">addEventListener</span>(<span class="c-str">"error"</span>, <span class="c-kw">function</span>(e) {
+    console.<span class="c-fn">error</span>(<span class="c-str">"[wxO] wxoLoader.js failed to load:"</span>, e);
+    <span class="c-fn">showChatError</span>(<span class="c-str">"Network error loading chat. Check CSP and internet access."</span>);
+  });
+
+  document.head.<span class="c-fn">appendChild</span>(script);
+}, <span class="c-num">0</span>);
+
+<span class="c-comment">// ── Error display helper ────────────────────────────────────────────────────</span>
+<span class="c-kw">function</span> <span class="c-fn">showChatError</span>(msg) {
+  <span class="c-kw">const</span> el = document.<span class="c-fn">getElementById</span>(window.wxOConfiguration.rootElementID);
+  <span class="c-kw">if</span> (!el) <span class="c-kw">return</span>;
+  el.innerHTML = <span class="c-str">`&lt;p style="color:#da1e28;padding:16px"&gt;⚠ ${msg}&lt;/p&gt;`</span>;
+}</pre>
+      </div>
+    </div>
+
+    <!-- Standalone -->
+    <div id="tab-standalone" class="tab-panel">
+      <div class="code-wrap">
+        <div class="code-header">
+          <span>standalone.html — save and open in browser</span>
+          <button class="copy-btn" onclick="copyCode('code-standalone')">Copy</button>
+        </div>
+        <pre id="code-standalone" class="code"><span class="c-kw">&lt;!DOCTYPE html&gt;</span>
+<span class="c-kw">&lt;html</span> <span class="c-key">lang</span>=<span class="c-str">"en"</span><span class="c-kw">&gt;</span>
+<span class="c-kw">&lt;head&gt;</span>
+  <span class="c-kw">&lt;meta</span> <span class="c-key">charset</span>=<span class="c-str">"UTF-8"</span><span class="c-kw">/&gt;</span>
+  <span class="c-kw">&lt;title&gt;</span>wxO Chat Test<span class="c-kw">&lt;/title&gt;</span>
+<span class="c-kw">&lt;/head&gt;</span>
+<span class="c-kw">&lt;body&gt;</span>
+  <span class="c-kw">&lt;h1&gt;</span>IBM wxO Chat Test Page<span class="c-kw">&lt;/h1&gt;</span>
+  <span class="c-kw">&lt;div</span> <span class="c-key">id</span>=<span class="c-str">"wxo-chat-root"</span><span class="c-kw">&gt;&lt;/div&gt;</span>
+
+  <span class="c-kw">&lt;script&gt;</span>
+    window.wxOConfiguration = {
+      <span class="c-key">orchestrationID</span>: <span class="c-str">"REPLACE_WITH_YOUR_ORCHESTRATION_ID"</span>,
+      <span class="c-key">hostURL</span>:         <span class="c-str">"https://eu-de.watson-orchestrate.cloud.ibm.com"</span>,
+      <span class="c-key">rootElementID</span>:   <span class="c-str">"wxo-chat-root"</span>,
+      <span class="c-key">showLauncher</span>:    <span class="c-num">true</span>,
+      <span class="c-key">crn</span>:             <span class="c-str">"REPLACE_WITH_YOUR_CRN"</span>,
+      <span class="c-key">deploymentPlatform</span>: <span class="c-str">"ibmcloud"</span>,
+      <span class="c-key">chatOptions</span>: {
+        <span class="c-key">agentId</span>:            <span class="c-str">"REPLACE_WITH_YOUR_AGENT_ID"</span>,
+        <span class="c-key">agentEnvironmentId</span>: <span class="c-str">"REPLACE_WITH_YOUR_ENV_ID"</span>
+      }
+    };
+    <span class="c-fn">setTimeout</span>(<span class="c-kw">function</span>() {
+      <span class="c-kw">const</span> s = document.<span class="c-fn">createElement</span>(<span class="c-str">"script"</span>);
+      s.src = window.wxOConfiguration.hostURL + <span class="c-str">"/wxochat/wxoLoader.js?embed=true"</span>;
+      s.<span class="c-fn">addEventListener</span>(<span class="c-str">"load"</span>, () =&gt; wxoLoader.<span class="c-fn">init</span>());
+      document.head.<span class="c-fn">appendChild</span>(s);
+    }, <span class="c-num">0</span>);
+  <span class="c-kw">&lt;/script&gt;</span>
+<span class="c-kw">&lt;/body&gt;</span>
+<span class="c-kw">&lt;/html&gt;</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Live widget
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Live widget (unsecured)</h2>
+    <p>
+      If you have already disabled embed security on your wxO tenant, the chat
+      bubble will appear in the bottom-right corner of this page.
+    </p>
+    <div class="chat-preview">
+      <div class="chat-preview-bar">
+        <div class="chat-dot"></div>
+        <span>ibm_bob_assistant — Unsecured embed</span>
+        <span style="margin-left:auto;font-size:11px;color:#8d8d8d">
+          Security: OFF (anonymous)
+        </span>
+      </div>
+      <div class="chat-preview-body">
+        <div class="chat-preview-hint">
+          <div style="font-size:28px;margin-bottom:8px">💬</div>
+          <strong>Look for the chat bubble in the bottom-right corner.</strong><br>
+          If you see "Authentication Error", complete Step 4 above<br>
+          (disable security on the wxO tenant) and refresh.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Tradeoffs
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>When to use — and when not to</h2>
+    <ul class="checklist">
+      <li>Public product demos with no sensitive data</li>
+      <li>Internal prototypes where all users are trusted</li>
+      <li>Rapid testing during development</li>
+      <li>Agents with only read-only public knowledge bases</li>
+      <li class="x">Agents connected to enterprise systems (Workday, ServiceNow, etc.)</li>
+      <li class="x">Any agent that can read or write PII or financial data</li>
+      <li class="x">Production deployments with a real user base</li>
+      <li class="warn">Rate limiting is not enforced — anyone can spam your agent</li>
+    </ul>
+    <div class="callout callout-blue" style="margin-top:16px">
+      Ready to add JWT security?
+      <a href="demo-secured.html"><strong>See the Secured Embed demo →</strong></a>
+    </div>
+  </section>
+
+</div><!-- /content -->
+
+<!-- ── Footer ── -->
+<footer>
+  <span>IBM Bob Documentation Assistant — Embed Demo</span>
+  <div style="display:flex;gap:16px">
+    <a href="embed-docs.html">Docs Hub</a>
+    <a href="demo-secured.html">Secured Demo</a>
+    <a href="index.html">Home</a>
+  </div>
+</footer>
+
+<!-- ── Live wxO chat widget (unsecured) ── -->
+<div id="wxo-chat-root"
+  style="position:fixed;bottom:0;right:0;z-index:9999;width:360px;max-height:calc(100vh - 40px)">
+</div>
+<script src="webchat-config.js"></script>
+
+<!-- ── JS utilities ── -->
+<script>
+  /* Tab switching */
+  function switchTab(btn, panelId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  /* Copy code button */
+  function copyCode(id) {
+    const el = document.getElementById(id);
+    const text = el ? el.textContent : '';
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+
+</body>
+</html>

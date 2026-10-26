@@ -1,0 +1,25 @@
+spec_version: v1
+kind: knowledge_base
+name: ibm_bob_docs
+description: >
+  Official IBM Bob documentation sourced from https://bob.ibm.com/docs/.
+  Covers all IBM Bob capabilities including IDE features, Bob Shell, enterprise
+  plans, premium packages, skills, MCP servers, configuration, Bobcoins,
+  Bobalytics analytics, security, telemetry, and modes.
+  Content is extracted from the live IBM Bob documentation via the Bob search API.
+documents:
+  - path: docs/01_overview.txt
+  - path: docs/02_bob_shell.txt
+  - path: docs/03_enterprise.txt
+  - path: docs/04_premium_packages.txt
+  - path: docs/05_skills.txt
+  - path: docs/06_mcp.txt
+  - path: docs/07_security.txt
+  - path: docs/08_telemetry.txt
+  - path: docs/09_modes.txt
+  - path: docs/10_bobcoins.txt
+  - path: docs/11_bobalytics.txt
+conversational_search_tool:
+  query_source: Agent
+  generation:
+    enabled: false

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 05 — Sample agent — component inventory | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 05 — Component inventory</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-04.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-06.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 5 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Key components</div>
+    <h2 class="slide-title">Sample agent — component inventory</h2>
+  </div>
+  <div class="slide-body">
+    <div class="four-up">
+      <div class="grid-cell">
+        <h3>Agent YAML</h3>
+        <p><code>agents/ibm_bob_assistant.agent.yaml</code> — defines the agent, model, KB reference, and tool bindings. Deployed to eu-de.</p>
+      </div>
+      <div class="grid-cell">
+        <h3>Knowledge base</h3>
+        <p><code>knowledge-bases/ibm_bob_docs.kb.yaml</code> — references 11 <code>.txt</code> files. Milvus indexes on import; poll until <code>Ready = True</code>.</p>
+      </div>
+      <div class="grid-cell">
+        <h3>Python tools</h3>
+        <p><code>tools/live_bob_search.py</code> — defines <code>search_bob_documentation</code> and <code>get_bob_doc_section</code>. Imported via orchestrate CLI.</p>
+      </div>
+      <div class="grid-cell">
+        <h3>Config script</h3>
+        <p><code>scripts/get_webchat_embed.sh</code> — fetches live embed IDs from wxO API and writes <code>web/webchat-config.js</code>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-04.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-06.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 5 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 5 / 20</span>
+</footer>
+</body>
+</html>

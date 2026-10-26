@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IBM watsonx Orchestrate — Embedded Chat Agent Implementation</title>
+<link rel="stylesheet" href="styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation — technical deep dive</span>
+  <div class="header-right">
+    <a href="slides/slide-01.html" class="btn-home">Start deck &#8594;</a>
+  </div>
+</header>
+<main class="main wide" style="padding-top:0">
+  <div class="index-hero">
+    <div class="deck-meta">Technical deep dive · 20 slides · Developers &amp; architects</div>
+    <h1>Embedded chat agent implementation</h1>
+    <p class="deck-desc">A complete implementation journey from a sample IBM watsonx Orchestrate agent through production-secured JWT-authenticated embedded chat, covering architecture, Python tooling, unsecured and secured embed patterns, and troubleshooting.</p>
+    <span class="deck-pill">ibm_bob_assistant · eu-de · ibm_cloud</span>
+  </div>
+  <div style="padding:0 2rem 2rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+      <div>
+        <h2 style="font-size:1.125rem;font-weight:600">All slides</h2>
+        <p style="font-size:.8375rem;color:var(--gray-50);margin-top:.125rem">20 slides across 4 sections · Click any slide to open · <a href="slides/slide-01.html">Start from beginning &#8594;</a></p>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <a href="slides/slide-01.html" class="btn-nav">Start presentation &#8594;</a>
+      </div>
+    </div>
+    <div class="section-group">
+  <div class="section-group-header s1">
+    <div class="sg-num">01</div>
+    <h2>Sample agent foundation</h2>
+  </div>
+  <div class="thumb-grid">
+    <a href="slides/slide-01.html" class="thumb-card" title="Cover">
+  <div class="thumb-preview cover-thumb">
+    <div class="thumb-num">01</div>
+    <div class="thumb-label">COVER-01</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 01</div>
+    <div class="slide-title">Cover</div>
+    <div class="slide-layout">COVER-01</div>
+  </div>
+</a>
+<a href="slides/slide-02.html" class="thumb-card" title="Agenda">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">02</div>
+    <div class="thumb-label dark">TOC-01</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 02</div>
+    <div class="slide-title">Agenda</div>
+    <div class="slide-layout">TOC-01</div>
+  </div>
+</a>
+<a href="slides/slide-03.html" class="thumb-card" title="01 — Sample agent foundation">
+  <div class="thumb-preview section-thumb">
+    <div class="thumb-num">03</div>
+    <div class="thumb-label">SECTION-03</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 03</div>
+    <div class="slide-title">01 — Sample agent foundation</div>
+    <div class="slide-layout">SECTION-03</div>
+  </div>
+</a>
+<a href="slides/slide-04.html" class="thumb-card" title="Sample agent architecture">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">04</div>
+    <div class="thumb-label dark">CONTENT-2COL</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 04</div>
+    <div class="slide-title">Sample agent architecture</div>
+    <div class="slide-layout">CONTENT-2COL</div>
+  </div>
+</a>
+<a href="slides/slide-05.html" class="thumb-card" title="Component inventory">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">05</div>
+    <div class="thumb-label dark">GRID-4UP-01</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 05</div>
+    <div class="slide-title">Component inventory</div>
+    <div class="slide-layout">GRID-4UP-01</div>
+  </div>
+</a>
+  </div>
+</div>
+<div class="section-group">
+  <div class="section-group-header s2">
+    <div class="sg-num">02</div>
+    <h2>Python built agent</h2>
+  </div>
+  <div class="thumb-grid">
+    <a href="slides/slide-06.html" class="thumb-card" title="02 — Python built agent">
+  <div class="thumb-preview s2-thumb">
+    <div class="thumb-num">06</div>
+    <div class="thumb-label">SECTION-03</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 06</div>
+    <div class="slide-title">02 — Python built agent</div>
+    <div class="slide-layout">SECTION-03</div>
+  </div>
+</a>
+<a href="slides/slide-07.html" class="thumb-card" title="Production architecture">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">07</div>
+    <div class="thumb-label dark">CONTENT-2COL-HEADERS</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 07</div>
+    <div class="slide-title">Production architecture</div>
+    <div class="slide-layout">CONTENT-2COL-HEADERS</div>
+  </div>
+</a>
+<a href="slides/slide-08.html" class="thumb-card" title="Tool and script reference">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">08</div>
+    <div class="thumb-label dark">CONTENT-3COL-DIVIDERS</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 08</div>
+    <div class="slide-title">Tool and script reference</div>
+    <div class="slide-layout">CONTENT-3COL-DIVIDERS</div>
+  </div>
+</a>
+<a href="slides/slide-09.html" class="thumb-card" title="Deployment command reference">
+  <div class="thumb-preview table-thumb">
+    <div class="thumb-num dark">09</div>
+    <div class="thumb-label dark">TABLE-01</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 09</div>
+    <div class="slide-title">Deployment command reference</div>
+    <div class="slide-layout">TABLE-01</div>
+  </div>
+</a>
+  </div>
+</div>
+<div class="section-group">
+  <div class="section-group-header s3">
+    <div class="sg-num">03</div>
+    <h2>Unsecured embed chat</h2>
+  </div>
+  <div class="thumb-grid">
+    <a href="slides/slide-10.html" class="thumb-card" title="03 — Unsecured embed chat">
+  <div class="thumb-preview s3-thumb">
+    <div class="thumb-num">10</div>
+    <div class="thumb-label">SECTION-03</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 10</div>
+    <div class="slide-title">03 — Unsecured embed chat</div>
+    <div class="slide-layout">SECTION-03</div>
+  </div>
+</a>
+<a href="slides/slide-11.html" class="thumb-card" title="Unsecured — at a glance">
+  <div class="thumb-preview stats-thumb">
+    <div class="thumb-num dark">11</div>
+    <div class="thumb-label dark">STATS-3UP</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 11</div>
+    <div class="slide-title">Unsecured — at a glance</div>
+    <div class="slide-layout">STATS-3UP</div>
+  </div>
+</a>
+<a href="slides/slide-12.html" class="thumb-card" title="Setup in three steps">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">12</div>
+    <div class="thumb-label dark">CONTENT-3COL-DIVIDERS</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 12</div>
+    <div class="slide-title">Setup in three steps</div>
+    <div class="slide-layout">CONTENT-3COL-DIVIDERS</div>
+  </div>
+</a>
+<a href="slides/slide-13.html" class="thumb-card" title="Config and identifiers">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">13</div>
+    <div class="thumb-label dark">CONTENT-2COL</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 13</div>
+    <div class="slide-title">Config and identifiers</div>
+    <div class="slide-layout">CONTENT-2COL</div>
+  </div>
+</a>
+<a href="slides/slide-14.html" class="thumb-card" title="Unsecured troubleshooting">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">14</div>
+    <div class="thumb-label dark">CONTENT-3COL-DIVIDERS</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 14</div>
+    <div class="slide-title">Unsecured troubleshooting</div>
+    <div class="slide-layout">CONTENT-3COL-DIVIDERS</div>
+  </div>
+</a>
+  </div>
+</div>
+<div class="section-group">
+  <div class="section-group-header s4">
+    <div class="sg-num">04</div>
+    <h2>Secured embed chat (JWT)</h2>
+  </div>
+  <div class="thumb-grid">
+    <a href="slides/slide-15.html" class="thumb-card" title="04 — Secured embed (JWT)">
+  <div class="thumb-preview s4-thumb">
+    <div class="thumb-num">15</div>
+    <div class="thumb-label">SECTION-03</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 15</div>
+    <div class="slide-title">04 — Secured embed (JWT)</div>
+    <div class="slide-layout">SECTION-03</div>
+  </div>
+</a>
+<a href="slides/slide-16.html" class="thumb-card" title="Secured — key facts">
+  <div class="thumb-preview stats-thumb">
+    <div class="thumb-num dark">16</div>
+    <div class="thumb-label dark">STATS-3UP</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 16</div>
+    <div class="slide-title">Secured — key facts</div>
+    <div class="slide-layout">STATS-3UP</div>
+  </div>
+</a>
+<a href="slides/slide-17.html" class="thumb-card" title="JWT components">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">17</div>
+    <div class="thumb-label dark">GRID-4UP-01</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 17</div>
+    <div class="slide-title">JWT components</div>
+    <div class="slide-layout">GRID-4UP-01</div>
+  </div>
+</a>
+<a href="slides/slide-18.html" class="thumb-card" title="JWT token lifecycle">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">18</div>
+    <div class="thumb-label dark">CONTENT-3COL-DIVIDERS</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 18</div>
+    <div class="slide-title">JWT token lifecycle</div>
+    <div class="slide-layout">CONTENT-3COL-DIVIDERS</div>
+  </div>
+</a>
+<a href="slides/slide-19.html" class="thumb-card" title="Secured troubleshooting">
+  <div class="thumb-preview content-thumb">
+    <div class="thumb-num dark">19</div>
+    <div class="thumb-label dark">CONTENT-2COL</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 19</div>
+    <div class="slide-title">Secured troubleshooting</div>
+    <div class="slide-layout">CONTENT-2COL</div>
+  </div>
+</a>
+<a href="slides/slide-20.html" class="thumb-card" title="Closing">
+  <div class="thumb-preview quote-thumb">
+    <div class="thumb-num">20</div>
+    <div class="thumb-label">STATEMENT-01</div>
+  </div>
+  <div class="thumb-info">
+    <div class="slide-no">Slide 20</div>
+    <div class="slide-title">Closing</div>
+    <div class="slide-layout">STATEMENT-01</div>
+  </div>
+</a>
+  </div>
+</div>
+    <div style="margin-top:2rem;padding:1.5rem;background:var(--white);border-radius:8px;border:1px solid var(--gray-20)">
+      <h3 style="font-size:1rem;margin-bottom:.75rem">Quick reference</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;font-size:.8375rem">
+        <div><strong class="text-blue">Unsecured embed</strong><br/><span style="color:var(--gray-70)">Administration → Settings → Embed Security → OFF</span></div>
+        <div><strong class="text-blue">Secured embed</strong><br/><span style="color:var(--gray-70)">bash scripts/generate_rsa_keys.sh</span></div>
+        <div><strong class="text-blue">JWT server</strong><br/><span style="color:var(--gray-70)">python scripts/jwt_server.py (port 3001)</span></div>
+        <div><strong class="text-blue">Deploy pipeline</strong><br/><span style="color:var(--gray-70)">./scripts/start.sh --start-jwt-server</span></div>
+        <div><strong class="text-blue">Auth error fix</strong><br/><span style="color:var(--gray-70)">WXO-PROXY-10080E → upload public key</span></div>
+        <div><strong class="text-blue">Web demos</strong><br/><span style="color:var(--gray-70)">python3 -m http.server 8080 --directory web</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>20 slides &nbsp;·&nbsp; <a href="slides/slide-01.html">Start presentation</a></span>
+</footer>
+</body>
+</html>

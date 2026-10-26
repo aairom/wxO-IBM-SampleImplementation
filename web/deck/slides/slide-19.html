@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 19 — Secured embed — troubleshooting | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 19 — Secured troubleshooting</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-18.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-20.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 19 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:95%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 04</div>
+    <h2 class="slide-title">Secured embed — troubleshooting</h2>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div class="col-content">
+        <div class="error-entry">
+          <div class="error-label">WXO-PROXY-10080E (kid not found)</div>
+          <p class="cause"><strong>Cause:</strong> Public key not uploaded, or Security toggle is OFF.</p>
+          <p class="fix"><strong>Fix:</strong> Upload <code>keys/wxo_embed_public.pem</code> at Administration → Settings → Embed Security → Security: ON.</p>
+        </div>
+        <div class="error-entry">
+          <div class="error-label">JWT server not reachable</div>
+          <p class="cause"><strong>Cause:</strong> <code>jwt_server.py</code> not running, or wrong port.</p>
+          <div class="code-block"><pre>source venv/bin/activate
+python scripts/jwt_server.py
+<span class="cm"># Check: GET localhost:3001/</span>
+<span class="cm"># should return {status: ok}</span></pre></div>
+        </div>
+        <div class="error-entry">
+          <div class="error-label">Token expired immediately</div>
+          <p class="cause"><strong>Cause:</strong> <code>JWT_EXPIRY_SECONDS</code> exceeds 7100 (IBM hard limit).</p>
+          <p class="fix"><strong>Fix:</strong> Set <code>JWT_EXPIRY_SECONDS=3600</code> in <code>.env</code>.</p>
+        </div>
+      </div>
+      <div class="col-content">
+        <div class="error-entry">
+          <div class="error-label">CORS blocked on /api/token</div>
+          <p class="cause"><strong>Cause:</strong> Web page origin not in <code>ALLOWED_ORIGINS</code>.</p>
+          <div class="code-block"><pre><span class="cm"># Add to .env</span>
+ALLOWED_ORIGINS=http://localhost:8080,
+  https://myapp.example.com</pre></div>
+        </div>
+        <div class="error-entry">
+          <div class="error-label">Private key not found at startup</div>
+          <p class="cause"><strong>Cause:</strong> <code>EMBED_PRIVATE_KEY_FILE</code> path is wrong or <code>keys/</code> not generated.</p>
+          <p class="fix"><strong>Fix:</strong> Run <code>bash scripts/generate_rsa_keys.sh</code>.</p>
+        </div>
+        <div class="error-entry">
+          <div class="error-label">Stop the JWT server</div>
+          <div class="code-block"><pre><span class="cm"># Via stop.sh (uses lsof)</span>
+./scripts/stop.sh
+
+<span class="cm"># Manual</span>
+kill $(lsof -ti tcp:3001)</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-18.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-20.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 19 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:95%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 19 / 20</span>
+</footer>
+</body>
+</html>

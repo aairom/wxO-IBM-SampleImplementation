@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 08 — Tool and script reference | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 08 — Tool reference</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-07.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-09.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 8 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 02</div>
+    <h2 class="slide-title">Tool and script reference</h2>
+  </div>
+  <div class="slide-body">
+    <div class="three-col">
+      <div class="col-block">
+        <h3>Import pipeline</h3>
+        <div class="code-block"><pre><span class="cm"># Full 9-step idempotent deploy</span>
+scripts/start.sh
+  --force-reimport
+  --skip-kb-check
+  --start-jwt-server
+
+<span class="cm"># Undeploy + stop JWT server</span>
+scripts/stop.sh
+  --keep-kb
+  --keep-agent</pre></div>
+      </div>
+      <div class="col-block">
+        <h3>Agent tooling</h3>
+        <div class="code-block"><pre><span class="cm"># Import @tool functions</span>
+scripts/import_tools.py
+<span class="cm"># writes JSON report → output/</span>
+
+<span class="cm"># Import agent YAML</span>
+scripts/import_agent.py
+  --force
+  --dry-run
+  --verbose
+  --no-log-file</pre></div>
+      </div>
+      <div class="col-block">
+        <h3>KB and docs</h3>
+        <div class="code-block"><pre><span class="cm"># Refresh KB .txt files</span>
+scripts/fetch_ibm_bob_docs.py
+<span class="cm"># requires:</span>
+<span class="cm"># BOB_SEARCH_API_URL</span>
+<span class="cm"># BOB_SEARCH_API_TOKEN</span>
+
+<span class="cm"># Re-import KB after refresh</span>
+orchestrate knowledge-bases   import -f kb.yaml</pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-07.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-09.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 8 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 8 / 20</span>
+</footer>
+</body>
+</html>

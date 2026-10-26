@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 09 — Deployment command reference | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 09 — Command reference</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-08.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-10.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 9 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 02</div>
+    <h2 class="slide-title">Deployment command reference</h2>
+  </div>
+  <div class="slide-body">
+    <table class="data-table">
+      <thead>
+        <tr><th>Command</th><th>Purpose</th><th>Use case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>./scripts/start.sh</td><td>Full 9-step deploy</td><td>First-time setup</td></tr>
+        <tr><td>./scripts/start.sh --skip-kb-check</td><td>Skip KB readiness poll</td><td>KB already Ready</td></tr>
+        <tr><td>./scripts/start.sh --force-reimport</td><td>Force clean slate</td><td>After YAML changes</td></tr>
+        <tr><td>./scripts/start.sh --start-jwt-server</td><td>Deploy + launch JWT server</td><td>Secured embed setup</td></tr>
+        <tr><td>./scripts/stop.sh</td><td>Undeploy all</td><td>Teardown environment</td></tr>
+        <tr><td>./scripts/stop.sh --keep-kb</td><td>Keep KB, remove agent</td><td>Save re-indexing time</td></tr>
+        <tr><td>./scripts/cleanup.sh</td><td>Remove venv and caches</td><td>Local workspace cleanup</td></tr>
+        <tr><td>python scripts/import_agent.py --dry-run</td><td>Validate YAML only</td><td>Pre-commit checks</td></tr>
+      </tbody>
+    </table>
+    <div class="callout mt-2">
+      <strong>Idempotent by design</strong>
+      All scripts check existing state before acting — safe to run multiple times without side effects.
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-08.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-10.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 9 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 9 / 20</span>
+</footer>
+</body>
+</html>

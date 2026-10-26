@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 17 — JWT architecture — component roles | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 17 — JWT components</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-16.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-18.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 17 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Secured embed components</div>
+    <h2 class="slide-title">JWT architecture — component roles</h2>
+  </div>
+  <div class="slide-body">
+    <div class="four-up">
+      <div class="grid-cell">
+        <h3>generate_rsa_keys.sh</h3>
+        <p>Generates RSA-2048 key pair via <code>openssl</code>. Outputs <code>keys/wxo_embed_private.pem</code> (chmod 600) and <code>keys/wxo_embed_public.pem</code>. Non-interactive when called from <code>start.sh</code>.</p>
+        <div class="code-block mt-1"><pre>bash scripts/generate_rsa_keys.sh</pre></div>
+      </div>
+      <div class="grid-cell">
+        <h3>jwt_server.py</h3>
+        <p>Python HTTP server on <code>:3001</code>. <code>GET /</code> (health), <code>GET /api/token</code> (anon JWT), <code>POST /api/token</code> (user JWT). RS256 via PyJWT. CORS enabled.</p>
+        <div class="code-block mt-1"><pre>python scripts/jwt_server.py</pre></div>
+      </div>
+      <div class="grid-cell">
+        <h3>identityToken callback</h3>
+        <p>Added to <code>chatOptions</code> in <code>window.wxOConfiguration</code>. Widget calls <code>getToken()</code> on init and before token expiry. Returns a raw RS256-signed JWT string.</p>
+        <div class="code-block mt-1"><pre>identityToken: {
+  getToken: async () =&gt; {
+    const r = await fetch(
+      "localhost:3001/api/token");
+    return (await r.json()).token;
+  }
+}</pre></div>
+      </div>
+      <div class="grid-cell">
+        <h3>wxO tenant config</h3>
+        <p>Upload <code>keys/wxo_embed_public.pem</code> at Administration → Settings → Embed Security → Security: ON. wxO verifies JWTs against this key using the <code>kid</code> claim.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-16.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-18.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 17 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 17 / 20</span>
+</footer>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 07 — Production agent architecture | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 07 — Production architecture</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-06.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-08.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 7 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 02</div>
+    <h2 class="slide-title">Production agent architecture</h2>
+  </div>
+  <div class="slide-body">
+    <div class="two-col-headed">
+      <div class="col-block">
+        <h3>Backend services</h3>
+        <p><code>scripts/import_tools.py</code> and <code>scripts/import_agent.py</code> orchestrate the full import pipeline with JSON reports written to <code>output/</code>. Both scripts accept <code>--force-reimport</code>, <code>--dry-run</code>, and <code>--verbose</code> flags for CI/CD integration.</p>
+        <div class="code-block mt-2"><pre># Exit codes
+0 = success
+1 = import failed
+2 = YAML invalid</pre></div>
+      </div>
+      <div class="col-block">
+        <h3>Runtime dependencies</h3>
+        <p><code>requirements.txt</code> pins orchestrate CLI, <code>PyJWT ≥ 2.8.0</code>, and <code>cryptography ≥ 41.0.0</code>. Managed via <code>uv venv + uv pip install</code>.</p>
+        <div class="code-block mt-2"><pre># Key env vars (never hard-coded)
+ORCHESTRATE_URL
+IBM_CLOUD_API_KEY
+ORCHESTRATE_ENV_NAME
+
+# Logs written to logs/
+# (gitignored content, tracked dir)</pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-06.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-08.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 7 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 7 / 20</span>
+</footer>
+</body>
+</html>

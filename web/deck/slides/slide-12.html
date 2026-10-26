@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 12 — Unsecured embed — setup in three steps | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 12 — Setup steps</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-11.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-13.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 12 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 03</div>
+    <h2 class="slide-title">Unsecured embed — setup in three steps</h2>
+  </div>
+  <div class="slide-body">
+    <div class="three-col">
+      <div class="col-block">
+        <h3>Step 1 — disable security</h3>
+        <p>Open your wxO tenant:<br/><code>eu-de.watson-orchestrate.cloud.ibm.com</code></p>
+        <p>Navigate to:<br/><strong>Administration → Settings → Embed Security</strong></p>
+        <p>Toggle <strong>Security: OFF</strong> and click <strong>Save</strong>.</p>
+        <div class="callout error mt-2" style="font-size:.8125rem">
+          Without this step, all widget auth requests return HTTP 401 <code>WXO-PROXY-10080E</code>.
+        </div>
+      </div>
+      <div class="col-block">
+        <h3>Step 2 — generate config</h3>
+        <p>Run the config generator:</p>
+        <div class="code-block"><pre>bash scripts/get_webchat_embed.sh</pre></div>
+        <p>This calls the wxO API with your <code>IBM_CLOUD_API_KEY</code> and writes <code>web/webchat-config.js</code> with live values:</p>
+        <ul class="body-list">
+          <li>orchestrationID</li>
+          <li>hostURL</li>
+          <li>instanceUrl</li>
+          <li>agentId</li>
+          <li>agentEnvironmentId</li>
+        </ul>
+        <p class="text-muted mt-1" style="font-size:.8125rem">Never edit <code>webchat-config.js</code> manually — regenerate it.</p>
+      </div>
+      <div class="col-block">
+        <h3>Step 3 — serve and test</h3>
+        <p>Start the static web server:</p>
+        <div class="code-block"><pre>python3 -m http.server 8080   --directory web</pre></div>
+        <p>Open in browser: <code>http://localhost:8080</code></p>
+        <p>The wxO loader (<code>wxoLoader.js</code>) is fetched from the IBM CDN. The chat bubble appears bottom-right. Click and type a test query to confirm end-to-end connectivity.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-11.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-13.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 12 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 12 / 20</span>
+</footer>
+</body>
+</html>

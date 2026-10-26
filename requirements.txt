@@ -1,0 +1,8 @@
+requests>=2.32.0
+
+# JWT signing server (scripts/jwt_server.py) — secured embed mode
+PyJWT>=2.8.0
+cryptography>=41.0.0
+
+# Development / testing
+pytest>=7.0.0

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <title>Secured Embed (JWT) — IBM wxO Chat Demo</title>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       Content Security Policy — intentionally permissive for this LOCAL
+       DEMO page.  The previous restrictive policy blocked the wxO widget's
+       own CSS/font assets (loaded from *.watson.appdomain.cloud and CDN
+       subdomains not covered by the whitelist), producing an unstyled raw
+       DOM with no colours or icons.
+
+       For a production deployment, replace this with a tight policy once
+       you have captured the full asset origin list from browser DevTools
+       Network → filter by "Blocked" or "CSP".
+  ──────────────────────────────────────────────────────────────────────── -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+  " />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --ibm-blue:       #0f62fe;
+      --ibm-blue-hover: #0353e9;
+      --ibm-green:      #24a148;
+      --ibm-yellow:     #f1c21b;
+      --ibm-red:        #da1e28;
+      --ibm-purple:     #7c3dd1;
+      --bg:             #ffffff;
+      --bg-subtle:      #f4f4f4;
+      --border:         #e0e0e0;
+      --text:           #161616;
+      --text-subtle:    #525252;
+      --mono:           'IBM Plex Mono', monospace;
+      --sans:           'IBM Plex Sans', system-ui, sans-serif;
+      --radius:         4px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+    a { color: var(--ibm-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre { font-family: var(--mono); }
+
+    .topbar { background: var(--text); color:#fff; padding:10px 24px; display:flex; align-items:center; gap:16px; font-size:13px; }
+    .topbar-badge { background:#7c3dd1; color:#fff; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:.5px; }
+    .topbar-links { margin-left:auto; display:flex; gap:16px; }
+    .topbar-links a { color:#c6c6c6; }
+    .topbar-links a:hover { color:#fff; }
+
+    .hero {
+      background: linear-gradient(135deg, #1a0533 0%, #2d1b69 60%, #1c0044 100%);
+      color: #fff; padding: 56px 40px 48px;
+    }
+    .hero-label { font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:#d4bbff; margin-bottom:12px; }
+    .hero h1 { font-size:clamp(26px,4vw,40px); font-weight:300; line-height:1.2; margin-bottom:16px; }
+    .hero h1 strong { font-weight:600; color:#d4bbff; }
+    .hero-desc { max-width:620px; color:#c6c6c6; font-size:16px; margin-bottom:28px; }
+    .badge-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .badge { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:500; }
+    .badge-green  { background:rgba(36,161,72,.2); color:#42be65; border:1px solid rgba(36,161,72,.4); }
+    .badge-purple { background:rgba(124,61,209,.3); color:#d4bbff; border:1px solid rgba(124,61,209,.5); }
+    .badge-blue   { background:rgba(15,98,254,.2);  color:#78a9ff; border:1px solid rgba(15,98,254,.4); }
+
+    .content { max-width:960px; margin:0 auto; padding:40px 24px 80px; }
+    section { margin-bottom:48px; }
+    h2 { font-size:22px; font-weight:600; margin-bottom:8px; }
+    h3 { font-size:16px; font-weight:600; margin-bottom:10px; }
+    p  { color:var(--text-subtle); margin-bottom:12px; line-height:1.7; }
+
+    .callout { border-left:4px solid; padding:14px 18px; border-radius:0 var(--radius) var(--radius) 0; margin:20px 0; font-size:14px; }
+    .callout-green  { border-color:var(--ibm-green);  background:#defbe6; color:#0e6027; }
+    .callout-yellow { border-color:var(--ibm-yellow); background:#fdf6c3; color:#7a4c00; }
+    .callout-blue   { border-color:var(--ibm-blue);   background:#edf5ff; color:#001d6c; }
+    .callout-purple { border-color:var(--ibm-purple); background:#f6f2ff; color:#350e7e; }
+    .callout strong { font-weight:600; }
+
+    .steps { counter-reset:step; list-style:none; }
+    .steps li { counter-increment:step; display:grid; grid-template-columns:36px 1fr; gap:14px; margin-bottom:18px; align-items:start; }
+    .steps li::before { content:counter(step); width:36px; height:36px; border-radius:50%; background:var(--ibm-purple); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; flex-shrink:0; }
+    .step-body h3 { margin-bottom:4px; }
+
+    .code-wrap { background:#161616; border-radius:var(--radius); overflow:hidden; margin:16px 0; }
+    .code-header { background:#262626; padding:8px 16px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#c6c6c6; }
+    .code-header span { font-family:var(--mono); font-size:11px; color:#8d8d8d; }
+    .copy-btn { background:none; border:1px solid #525252; color:#c6c6c6; cursor:pointer; padding:3px 10px; border-radius:var(--radius); font-size:11px; transition:all .15s; }
+    .copy-btn:hover { background:#393939; border-color:#c6c6c6; }
+    pre.code { padding:20px; overflow-x:auto; font-size:13px; line-height:1.6; color:#f4f4f4; margin:0; }
+    .c-comment{color:#6f6f6f} .c-key{color:#78a9ff} .c-str{color:#42be65} .c-kw{color:#ff7eb6} .c-fn{color:#ee5396} .c-num{color:#ff832b}
+
+    .tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:24px; }
+    .tab-btn { padding:10px 20px; background:none; border:none; font-family:var(--sans); font-size:14px; font-weight:500; color:var(--text-subtle); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s; }
+    .tab-btn.active { color:var(--ibm-purple); border-bottom-color:var(--ibm-purple); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* ── Architecture diagram ── */
+    .arch {
+      display:grid; grid-template-columns:1fr 2px 1fr 2px 1fr; gap:0;
+      border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+      margin:20px 0;
+    }
+    .arch-col { padding:20px; }
+    .arch-col:nth-child(odd) { background:var(--bg-subtle); }
+    .arch-divider { background:var(--border); }
+    .arch-label { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-subtle); margin-bottom:8px; }
+    .arch-title { font-size:14px; font-weight:600; margin-bottom:6px; }
+    .arch-items { list-style:none; }
+    .arch-items li { font-size:12px; color:var(--text-subtle); padding:3px 0; display:flex; align-items:center; gap:6px; }
+    .arch-items li::before { content:'→'; color:var(--ibm-purple); }
+
+    /* ── Status panel ── */
+    .status-panel {
+      border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px;
+      background:var(--bg-subtle); margin:20px 0;
+    }
+    .status-row { display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13px; }
+    .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .dot-green  { background:var(--ibm-green); }
+    .dot-red    { background:var(--ibm-red); }
+    .dot-yellow { background:var(--ibm-yellow); animation:pulse 2s infinite; }
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .status-row .label { font-weight:500; color:var(--text); min-width:150px; }
+    .status-row .value { color:var(--text-subtle); }
+
+    /* ── Token inspector ── */
+    #token-display {
+      background:#161616; border-radius:var(--radius); padding:16px;
+      font-family:var(--mono); font-size:12px; color:#c6c6c6;
+      min-height:80px; word-break:break-all; position:relative;
+    }
+    #token-display .part-header { font-size:10px; color:#8d8d8d; margin-bottom:4px; margin-top:12px; }
+    #token-display .part-header:first-child { margin-top:0; }
+    #token-display .part-header-badge { display:inline-block; background:#333; padding:1px 8px; border-radius:3px; }
+    .part-red    { color:#ff8389; }
+    .part-purple { color:#d4bbff; }
+    .part-green  { color:#42be65; }
+
+    .btn-fetch { background:var(--ibm-purple); color:#fff; border:none; padding:10px 20px; border-radius:var(--radius); cursor:pointer; font-family:var(--sans); font-size:14px; font-weight:500; transition:background .15s; }
+    .btn-fetch:hover { background:#6929c4; }
+    .btn-fetch:disabled { background:#8d8d8d; cursor:not-allowed; }
+
+    .checklist { list-style:none; }
+    .checklist li { display:flex; align-items:flex-start; gap:10px; padding:6px 0; font-size:14px; }
+    .checklist li::before { content:'✓'; color:var(--ibm-green); font-weight:700; flex-shrink:0; }
+    .checklist li.x::before { content:'✗'; color:var(--ibm-red); }
+
+    footer { background:var(--text); color:#c6c6c6; padding:24px 40px; font-size:13px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    footer a { color:#78a9ff; }
+    .nav-strip { background:var(--bg-subtle); border-bottom:1px solid var(--border); padding:10px 24px; display:flex; gap:24px; align-items:center; font-size:13px; }
+    .nav-strip a { color:var(--text-subtle); }
+    .nav-strip a:hover { color:var(--ibm-blue); }
+    .nav-strip a.current { color:var(--ibm-purple); font-weight:600; }
+
+    .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; }
+    .compare-card { border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .compare-card h3 { margin-bottom:12px; }
+    .compare-card.unsecured h3 { color:#198038; }
+    .compare-card.secured   h3 { color:var(--ibm-purple); }
+    @media(max-width:640px){ .compare-grid { grid-template-columns:1fr; } .arch { grid-template-columns:1fr; } .arch-divider { display:none; } }
+  </style>
+</head>
+<body>
+
+<!-- ── Top navigation ── -->
+<div class="topbar">
+  <span style="font-weight:600">IBM wxO Embedded Chat</span>
+  <span class="topbar-badge">SECURED (JWT)</span>
+  <div class="topbar-links">
+    <a href="index.html">Home</a>
+    <a href="embed-docs.html">Docs Hub</a>
+    <a href="demo-unsecured.html">← Unsecured Demo</a>
+  </div>
+</div>
+
+<div class="nav-strip">
+  <a href="embed-docs.html">← Back to Docs Hub</a>
+  <a href="demo-unsecured.html">Unsecured Embed</a>
+  <a href="demo-secured.html" class="current">Secured Embed (JWT)</a>
+</div>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <p class="hero-label">Mode 2 of 2</p>
+  <h1>Secured Embed — <strong>RSA + JWT Authentication</strong></h1>
+  <p class="hero-desc">
+    Production-grade security using asymmetric RSA-2048 key pairs.
+    Every chat request is authenticated with a short-lived JWT signed by
+    your backend — the widget never talks to wxO without a valid token.
+  </p>
+  <div class="badge-row">
+    <span class="badge badge-green">✓ Production-grade</span>
+    <span class="badge badge-purple">🔑 RSA-2048 + JWT RS256</span>
+    <span class="badge badge-blue">→ Requires JWT signing server</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Architecture overview
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>How it works — architecture</h2>
+    <p>
+      The secured embed uses <strong>asymmetric RSA cryptography</strong>.
+      You generate a key pair: the <em>private key</em> stays on your server,
+      the <em>public key</em> is uploaded to the wxO tenant.  For each page
+      load, your backend signs a JWT with the private key.  The widget passes
+      this JWT to wxO, which verifies it using the public key.  No private
+      key ever leaves your server.
+    </p>
+
+    <div class="arch">
+      <div class="arch-col">
+        <div class="arch-label">Your Server</div>
+        <div class="arch-title">JWT Signing Service</div>
+        <ul class="arch-items">
+          <li>Holds RSA private key</li>
+          <li>Signs JWT on request</li>
+          <li>Never exposed to browser</li>
+          <li><code>scripts/jwt_server.py</code></li>
+          <li>Runs on port 3001</li>
+        </ul>
+      </div>
+      <div class="arch-divider"></div>
+      <div class="arch-col">
+        <div class="arch-label">Browser</div>
+        <div class="arch-title">Your Web Page</div>
+        <ul class="arch-items">
+          <li>Fetches JWT from /api/token</li>
+          <li>Passes JWT via identityToken</li>
+          <li>Never sees private key</li>
+          <li>Refreshes token on expiry</li>
+          <li>wxoLoader.init() with callback</li>
+        </ul>
+      </div>
+      <div class="arch-divider"></div>
+      <div class="arch-col">
+        <div class="arch-label">IBM Cloud</div>
+        <div class="arch-title">wxO Platform</div>
+        <ul class="arch-items">
+          <li>Holds your public key</li>
+          <li>Verifies JWT signature</li>
+          <li>Rejects unsigned requests</li>
+          <li>Issues session ticket</li>
+          <li>Streams chat responses</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-purple">
+      <strong>Key insight:</strong> The RSA public key is uploaded <em>once</em> to the
+      wxO tenant UI.  After that, every token issued by your backend is automatically
+      trusted by wxO — no API calls to IBM Cloud are needed at signing time.
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Setup steps
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Setup — step by step</h2>
+
+    <ol class="steps">
+      <li>
+        <div class="step-body">
+          <h3>Generate an RSA-2048 key pair</h3>
+          <p>Run this from the project root.  It creates <code>keys/wxo_embed_private.pem</code>
+          and <code>keys/wxo_embed_public.pem</code>.  The <code>keys/</code> folder is
+          already in <code>.gitignore</code>.</p>
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>bash</span>
+              <button class="copy-btn" onclick="copyCode('cmd-keygen')">Copy</button>
+            </div>
+            <pre id="cmd-keygen" class="code">bash scripts/generate_rsa_keys.sh</pre>
+          </div>
+          <p>The script prints the public key at the end — keep this terminal open for step 3.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Add the private key path to .env</h3>
+          <div class="code-wrap">
+            <div class="code-header"><span>.env</span><button class="copy-btn" onclick="copyCode('cmd-env')">Copy</button></div>
+            <pre id="cmd-env" class="code">EMBED_PRIVATE_KEY_FILE=keys/wxo_embed_private.pem
+JWT_SERVER_PORT=3001
+JWT_EXPIRY_SECONDS=3600
+ALLOWED_ORIGINS=http://localhost:8080</pre>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Upload the public key to the wxO tenant</h3>
+          <p>
+            Open
+            <a href="https://eu-de.watson-orchestrate.cloud.ibm.com" target="_blank" rel="noopener">
+              eu-de.watson-orchestrate.cloud.ibm.com
+            </a>
+            → <strong>Administration</strong> → <strong>Settings</strong>
+            → <strong>Embed Security</strong> tab.
+          </p>
+          <p>Toggle <strong>Security: ON</strong>.  Paste the entire contents
+          of <code>keys/wxo_embed_public.pem</code> into the <strong>Public key</strong>
+          field (including the <code>-----BEGIN PUBLIC KEY-----</code> header).
+          Click <strong>Save</strong>.</p>
+          <div class="callout callout-blue">
+            <strong>Note:</strong> You can retrieve the public key at any time with:
+            <code>cat keys/wxo_embed_public.pem</code>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Start the JWT signing server</h3>
+          <div class="code-wrap">
+            <div class="code-header"><span>bash</span><button class="copy-btn" onclick="copyCode('cmd-jwt')">Copy</button></div>
+            <pre id="cmd-jwt" class="code"><span class="c-comment"># Activate the venv first</span>
+source venv/bin/activate
+
+<span class="c-comment"># Start the JWT server in one terminal</span>
+python scripts/jwt_server.py
+
+<span class="c-comment"># Start the web server in another terminal</span>
+python3 -m http.server 8080 --directory web</pre>
+          </div>
+          <p>The JWT server listens on <code>http://localhost:3001</code>.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <h3>Open this page and verify</h3>
+          <p>Navigate to <code>http://localhost:8080/demo-secured.html</code>.
+          Use the token inspector below to verify the server is running and
+          tokens are being issued correctly.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Token inspector (live)
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Live JWT token inspector</h2>
+    <p>
+      Click <strong>Fetch Token</strong> to call your local JWT signing server
+      (<code>localhost:3001/api/token</code>) and inspect the decoded payload.
+    </p>
+
+    <div class="status-panel">
+      <div class="status-row">
+        <div class="dot" id="srv-dot" style="background:var(--ibm-yellow)"></div>
+        <span class="label">JWT server (localhost:3001)</span>
+        <span class="value" id="srv-status">Checking…</span>
+      </div>
+      <div class="status-row">
+        <div class="dot" id="token-dot" style="background:var(--ibm-yellow)"></div>
+        <span class="label">Last token</span>
+        <span class="value" id="token-status">Not fetched</span>
+      </div>
+    </div>
+
+    <button class="btn-fetch" id="fetch-btn" onclick="fetchAndInspectToken()">
+      Fetch &amp; Inspect Token
+    </button>
+
+    <div id="token-display" style="margin-top:16px">
+      <span style="color:#525252">Token will appear here after fetching…</span>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: The embed code
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Secured embed code</h2>
+    <p>
+      The key difference from the unsecured version is the
+      <code>identityToken</code> callback inside <code>chatOptions</code>.
+      The widget calls this function each time it needs a fresh JWT.
+    </p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" role="tab" onclick="switchTab(this,'tab-webchat')">webchat-secured.js</button>
+      <button class="tab-btn" role="tab" onclick="switchTab(this,'tab-python')">jwt_server.py (key parts)</button>
+      <button class="tab-btn" role="tab" onclick="switchTab(this,'tab-curl')">curl test</button>
+    </div>
+
+    <!-- webchat-secured.js -->
+    <div id="tab-webchat" class="tab-panel active">
+      <div class="code-wrap">
+        <div class="code-header">
+          <span>JavaScript — webchat-secured.js</span>
+          <button class="copy-btn" onclick="copyCode('code-webchat')">Copy</button>
+        </div>
+        <pre id="code-webchat" class="code"><span class="c-comment">// ── Secured wxO embed configuration ────────────────────────────────────────
+// Difference from unsecured: chatOptions.identityToken callback.
+// The widget calls this function whenever it needs a fresh JWT.
+// Your JWT server signs it — the browser never sees the private key.</span>
+
+window.wxOConfiguration = {
+  <span class="c-key">orchestrationID</span>: <span class="c-str">"e65910fa61ce9072d64902d03f3d4774_75c2cabb-2b02-4d65-8127-a9cc65d1ee46"</span>,
+  <span class="c-key">hostURL</span>:         <span class="c-str">"https://eu-de.watson-orchestrate.cloud.ibm.com"</span>,
+  <span class="c-key">rootElementID</span>:   <span class="c-str">"wxo-chat-root"</span>,
+  <span class="c-key">showLauncher</span>:    <span class="c-num">true</span>,
+  <span class="c-key">crn</span>:             <span class="c-str">"crn:v1:bluemix:public:watsonx-orchestrate:eu-de:a/..."</span>,
+  <span class="c-key">deploymentPlatform</span>: <span class="c-str">"ibmcloud"</span>,
+  <span class="c-key">chatOptions</span>: {
+    <span class="c-key">agentId</span>:            <span class="c-str">"5c3c69c8-be40-44c8-9681-3e7f21c64072"</span>,
+    <span class="c-key">agentEnvironmentId</span>: <span class="c-str">"dba7f186-fe9b-4d42-9735-ba2601645aac"</span>,
+
+    <span class="c-comment">// ── identityToken: called by the widget on every auth refresh ────────</span>
+    <span class="c-key">identityToken</span>: {
+      <span class="c-comment">// Called once on init, then whenever the current token nears expiry.</span>
+      <span class="c-fn">getToken</span>: <span class="c-kw">async function</span>() {
+        <span class="c-comment">// 1. Call your JWT signing backend (simple GET — no body, no Content-Type)</span>
+        <span class="c-kw">const</span> res = <span class="c-kw">await</span> <span class="c-fn">fetch</span>(<span class="c-str">"http://localhost:3001/api/token"</span>);
+        <span class="c-kw">if</span> (!res.ok) <span class="c-kw">throw new</span> <span class="c-fn">Error</span>(<span class="c-str">`Token server error: ${res.status}`</span>);
+
+        <span class="c-comment">// 2. Extract the JWT string and return it</span>
+        <span class="c-kw">const</span> data = <span class="c-kw">await</span> res.<span class="c-fn">json</span>();
+        <span class="c-kw">return</span> data.token;  <span class="c-comment">// must be a raw JWT string</span>
+      }
+    }
+  }
+};
+
+<span class="c-comment">// ── Pass user context (optional) ─────────────────────────────────────────
+// For authenticated pages, send user ID/name so it appears in chat history.</span>
+<span class="c-kw">async function</span> <span class="c-fn">getTokenForUser</span>(userId, userName) {
+  <span class="c-kw">const</span> res = <span class="c-kw">await</span> <span class="c-fn">fetch</span>(<span class="c-str">"http://localhost:3001/api/token"</span>, {
+    method: <span class="c-str">"POST"</span>,
+    headers: { <span class="c-str">"Content-Type"</span>: <span class="c-str">"application/json"</span> },
+    body: <span class="c-fn">JSON.stringify</span>({ userId, name: userName })
+  });
+  <span class="c-kw">const</span> { token } = <span class="c-kw">await</span> res.<span class="c-fn">json</span>();
+  <span class="c-kw">return</span> token;
+}
+
+<span class="c-comment">// ── Load the wxO chat widget ────────────────────────────────────────────────</span>
+<span class="c-fn">setTimeout</span>(<span class="c-kw">function</span>() {
+  <span class="c-kw">const</span> script = document.<span class="c-fn">createElement</span>(<span class="c-str">"script"</span>);
+  script.src  = window.wxOConfiguration.hostURL + <span class="c-str">"/wxochat/wxoLoader.js?embed=true"</span>;
+  script.async = <span class="c-num">true</span>;
+  script.<span class="c-fn">addEventListener</span>(<span class="c-str">"load"</span>, () =&gt; wxoLoader.<span class="c-fn">init</span>());
+  document.head.<span class="c-fn">appendChild</span>(script);
+}, <span class="c-num">0</span>);</pre>
+      </div>
+    </div>
+
+    <!-- jwt_server.py -->
+    <div id="tab-python" class="tab-panel">
+      <div class="code-wrap">
+        <div class="code-header">
+          <span>Python — scripts/jwt_server.py (key sections)</span>
+          <button class="copy-btn" onclick="copyCode('code-python')">Copy</button>
+        </div>
+        <pre id="code-python" class="code"><span class="c-comment"># ── Token factory ─────────────────────────────────────────────────────────</span>
+<span class="c-kw">import</span> jwt <span class="c-kw">as</span> pyjwt, time, uuid
+
+<span class="c-kw">def</span> <span class="c-fn">create_jwt</span>(user_id=None, user_name=None, extra_claims=None):
+    <span class="c-str">"""Sign a JWT with the RSA private key loaded from EMBED_PRIVATE_KEY_FILE."""</span>
+    now = int(time.time())
+    payload = {
+        <span class="c-str">"iss"</span>: <span class="c-str">"ibm_bob_assistant_demo"</span>,    <span class="c-comment"># issuer</span>
+        <span class="c-str">"sub"</span>: user_id or f<span class="c-str">"anonymous-{uuid.uuid4().hex[:8]}"</span>,  <span class="c-comment"># subject</span>
+        <span class="c-str">"aud"</span>: <span class="c-str">"watsonx-orchestrate"</span>,          <span class="c-comment"># audience</span>
+        <span class="c-str">"iat"</span>: now,                            <span class="c-comment"># issued at</span>
+        <span class="c-str">"exp"</span>: now + EXPIRY_SECONDS,           <span class="c-comment"># expiry (max 7100s)</span>
+        <span class="c-str">"jti"</span>: str(uuid.uuid4()),              <span class="c-comment"># unique token ID</span>
+    }
+    <span class="c-kw">if</span> user_name:  payload[<span class="c-str">"name"</span>] = user_name
+    <span class="c-kw">return</span> pyjwt.encode(payload, PRIVATE_KEY_PEM, algorithm=<span class="c-str">"RS256"</span>)
+
+<span class="c-comment"># ── HTTP endpoint: POST /api/token ─────────────────────────────────────────</span>
+<span class="c-comment"># Receives optional { userId, name } body, returns { token, expires_in }</span>
+<span class="c-kw">def</span> <span class="c-fn">do_POST</span>(self):
+    body = json.loads(self.rfile.read(int(self.headers[<span class="c-str">"Content-Length"</span>])))
+    token = <span class="c-fn">create_jwt</span>(
+        user_id=body.get(<span class="c-str">"userId"</span>),
+        user_name=body.get(<span class="c-str">"name"</span>),
+    )
+    self.<span class="c-fn">_json</span>(<span class="c-num">200</span>, {
+        <span class="c-str">"token"</span>:      token,
+        <span class="c-str">"expires_in"</span>: EXPIRY_SECONDS,
+        <span class="c-str">"token_type"</span>: <span class="c-str">"Bearer"</span>,
+    })</pre>
+      </div>
+    </div>
+
+    <!-- curl test -->
+    <div id="tab-curl" class="tab-panel">
+      <div class="code-wrap">
+        <div class="code-header">
+          <span>bash — smoke test the JWT server</span>
+          <button class="copy-btn" onclick="copyCode('code-curl')">Copy</button>
+        </div>
+        <pre id="code-curl" class="code"><span class="c-comment"># Health check</span>
+curl http://localhost:3001/
+
+<span class="c-comment"># Get an anonymous token</span>
+curl http://localhost:3001/api/token | python3 -m json.tool
+
+<span class="c-comment"># Get a token with user context</span>
+curl -X POST http://localhost:3001/api/token \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "alice@example.com", "name": "Alice"}'
+
+<span class="c-comment"># Decode the token (no signature verification — just inspect claims)</span>
+TOKEN=$(curl -s http://localhost:3001/api/token | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+echo "$TOKEN" | python3 -c "
+import sys, base64, json
+parts = sys.stdin.read().strip().split('.')
+header  = json.loads(base64.b64decode(parts[0] + '=='))
+payload = json.loads(base64.b64decode(parts[1] + '=='))
+print('Header: ',  json.dumps(header,  indent=2))
+print('Payload: ', json.dumps(payload, indent=2))
+"</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Comparison table
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Unsecured vs Secured — side by side</h2>
+    <div class="compare-grid">
+      <div class="compare-card unsecured">
+        <h3>🔓 Unsecured</h3>
+        <ul class="checklist">
+          <li>No backend needed</li>
+          <li>Zero configuration code</li>
+          <li>Works on any static host</li>
+          <li class="x">No user identity</li>
+          <li class="x">Anyone can use your agent</li>
+          <li class="x">No audit trail</li>
+          <li class="x">Disable security in wxO UI first</li>
+        </ul>
+      </div>
+      <div class="compare-card secured">
+        <h3>🔒 Secured (JWT)</h3>
+        <ul class="checklist">
+          <li>RSA-2048 asymmetric signing</li>
+          <li>Short-lived tokens (≤ 7100s)</li>
+          <li>User identity propagated to wxO</li>
+          <li>Audit trail in wxO logs</li>
+          <li>Compatible with SSO / OAuth</li>
+          <li>Required for enterprise agents</li>
+          <li class="x">Requires JWT signing server</li>
+          <li class="x">More initial setup</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       SECTION: Live widget
+  ──────────────────────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Live widget (secured)</h2>
+    <p>
+      The widget below uses the <code>identityToken.getToken</code> callback
+      to fetch a JWT from <code>localhost:3001</code> before each authentication.
+      It will only work when the JWT server is running and the public key is
+      configured on the wxO tenant.
+    </p>
+    <div id="jwt-server-status" class="callout callout-yellow">
+      <strong>⏳ Checking JWT server…</strong>
+      If you see this for more than 3 seconds, start the server:
+      <code>python scripts/jwt_server.py</code>
+    </div>
+  </section>
+
+</div><!-- /content -->
+
+<!-- ── Footer ── -->
+<footer>
+  <span>IBM Bob Documentation Assistant — Secured Embed Demo</span>
+  <div style="display:flex;gap:16px">
+    <a href="embed-docs.html">Docs Hub</a>
+    <a href="demo-unsecured.html">Unsecured Demo</a>
+    <a href="index.html">Home</a>
+  </div>
+</footer>
+
+<!-- ── Live wxO chat widget — SECURED version ── -->
+<div id="wxo-chat-root"
+  style="position:fixed;bottom:0;right:0;z-index:9999;width:360px;max-height:calc(100vh - 40px)">
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// SECURED wxO embed configuration
+// The key addition is chatOptions.identityToken.getToken — the widget calls
+// this callback whenever it needs a fresh JWT.  Your backend (jwt_server.py)
+// signs the token with the RSA private key; wxO verifies with the public key
+// you uploaded in Administration → Settings → Embed Security.
+// ════════════════════════════════════════════════════════════════════════════
+
+const JWT_SERVER = "http://localhost:3001";
+
+window.wxOConfiguration = {
+  orchestrationID:    "e65910fa61ce9072d64902d03f3d4774_75c2cabb-2b02-4d65-8127-a9cc65d1ee46",
+  hostURL:            "https://eu-de.watson-orchestrate.cloud.ibm.com",
+  instanceUrl:        "https://api.eu-de.watson-orchestrate.cloud.ibm.com/instances/75c2cabb-2b02-4d65-8127-a9cc65d1ee46",
+  rootElementID:      "wxo-chat-root",
+  showLauncher:       true,
+  crn:                "crn:v1:bluemix:public:watsonx-orchestrate:eu-de:a/e65910fa61ce9072d64902d03f3d4774:75c2cabb-2b02-4d65-8127-a9cc65d1ee46::",
+  deploymentPlatform: "ibmcloud",
+
+  chatOptions: {
+    agentId:            "5c3c69c8-be40-44c8-9681-3e7f21c64072",
+    agentEnvironmentId: "dba7f186-fe9b-4d42-9735-ba2601645aac",
+
+    // ── identityToken ────────────────────────────────────────────────────
+    // The wxO widget calls getToken() on init and before token expiry.
+    // Return a raw JWT string signed by your backend.
+    identityToken: {
+      getToken: async function() {
+        const res = await fetch(JWT_SERVER + "/api/token");
+        if (!res.ok) throw new Error(`JWT server error: ${res.status}`);
+        const data = await res.json();
+        return data.token;   // must be a raw JWT string (not "Bearer ...")
+      }
+    }
+  },
+
+  // ── Visual style — IBM Carbon g10 (light) theme ───────────────────────────
+  // style.theme:'light' switches from the default dark-purple to Carbon g10.
+  // All color properties are flat camelCase inside the style object.
+  // Reference: https://developer.watson-orchestrate.ibm.com/webchat/ui_configuration
+  style: {
+    theme:                      "light",
+    headerColor:                "#0f62fe",   // IBM Blue 60 header bar
+    primaryColor:               "#0f62fe",   // interactive elements (send btn, links)
+    userMessageBackgroundColor: "#d0e2ff",   // IBM Blue 10 — user bubbles
+    showBackgroundGradient:     false        // disable the default purple gradient
+  },
+
+  // ── Header controls ───────────────────────────────────────────────────────
+  header: {
+    showResetButton:   true,
+    showAiDisclaimer:  false,   // remove the AI disclaimer tooltip
+    showAgentName:     true,
+    showAgentAvatar:   false    // hide the generic AI avatar square
+  }
+};
+
+// ── Load the wxO loader ──────────────────────────────────────────────────────
+setTimeout(function() {
+  const script = document.createElement("script");
+  script.src   = window.wxOConfiguration.hostURL + "/wxochat/wxoLoader.js?embed=true";
+  script.async = true;
+
+  script.addEventListener("load", function() {
+    if (typeof wxoLoader !== "undefined" && typeof wxoLoader.init === "function") {
+      wxoLoader.init();
+      console.info("[wxO] Secured chat widget initialised.");
+    } else {
+      console.error("[wxO] wxoLoader not available.");
+    }
+  });
+
+  script.addEventListener("error", function(e) {
+    console.error("[wxO] Failed to load wxoLoader.js:", e);
+  });
+
+  document.head.appendChild(script);
+}, 0);
+
+// ════════════════════════════════════════════════════════════════════════════
+// JWT server health check + inspector UI
+// ════════════════════════════════════════════════════════════════════════════
+
+// AbortSignal.timeout() requires Chrome 103+/Firefox 100+/Safari 16+.
+// Use a manual AbortController fallback for broader compatibility.
+function _fetchWithTimeout(url, ms) {
+  if (typeof AbortSignal.timeout === "function") {
+    return fetch(url, { signal: AbortSignal.timeout(ms) });
+  }
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+}
+
+async function checkJWTServer() {
+  try {
+    const res = await _fetchWithTimeout(JWT_SERVER + "/", 3000);
+    if (res.ok) {
+      document.getElementById("srv-dot").className    = "dot dot-green";
+      document.getElementById("srv-status").textContent = "Running ✓";
+      document.getElementById("jwt-server-status").className = "callout callout-green";
+      document.getElementById("jwt-server-status").innerHTML =
+        "<strong>✓ JWT server is running</strong> — the secured chat widget is active.";
+    } else {
+      throw new Error("non-OK response");
+    }
+  } catch {
+    document.getElementById("srv-dot").className    = "dot dot-red";
+    document.getElementById("srv-status").textContent = "Not running";
+    document.getElementById("jwt-server-status").innerHTML =
+      "<strong>⚠ JWT server not running.</strong> Start it with: " +
+      "<code>source venv/bin/activate && python scripts/jwt_server.py</code>";
+  }
+}
+
+// ── Token inspector ──────────────────────────────────────────────────────────
+async function fetchAndInspectToken() {
+  const btn = document.getElementById("fetch-btn");
+  btn.disabled = true;
+  btn.textContent = "Fetching…";
+  document.getElementById("token-dot").className = "dot dot-yellow";
+  document.getElementById("token-status").textContent = "Fetching…";
+
+  try {
+    const res  = await fetch(JWT_SERVER + "/api/token");
+    const data = await res.json();
+
+    if (!res.ok || !data.token) throw new Error(data.error || "No token returned");
+
+    const [rawHeader, rawPayload] = data.token.split(".");
+
+    // Base64url decode
+    function b64Dec(str) {
+      const b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+      return JSON.parse(atob(b64 + "==".slice((b64.length + 3) % 4 || 4 - (b64.length % 4))));
+    }
+    const header  = b64Dec(rawHeader);
+    const payload = b64Dec(rawPayload);
+
+    const exp     = new Date(payload.exp  * 1000).toISOString();
+    const iat     = new Date(payload.iat  * 1000).toISOString();
+    const ttl     = data.expires_in;
+
+    document.getElementById("token-dot").className    = "dot dot-green";
+    document.getElementById("token-status").textContent =
+      `Valid — expires in ${ttl}s (${exp})`;
+
+    document.getElementById("token-display").innerHTML = `
+      <div class="part-header"><span class="part-header-badge">HEADER · algorithm + type</span></div>
+      <div class="part-red">${JSON.stringify(header, null, 2)}</div>
+
+      <div class="part-header"><span class="part-header-badge">PAYLOAD · claims</span></div>
+      <div class="part-purple">${JSON.stringify({...payload, iat_human: iat, exp_human: exp}, null, 2)}</div>
+
+      <div class="part-header"><span class="part-header-badge">SIGNATURE · RS256 (RSA-2048)</span></div>
+      <div class="part-green" style="word-break:break-all">${data.token.split(".")[2].slice(0,64)}…</div>
+
+      <div style="margin-top:12px;font-size:11px;color:#8d8d8d">
+        Raw JWT length: ${data.token.length} chars · 
+        Algo: ${header.alg} · 
+        TTL: ${ttl}s · 
+        Subject: ${payload.sub}
+      </div>`;
+
+  } catch(err) {
+    document.getElementById("token-dot").className    = "dot dot-red";
+    document.getElementById("token-status").textContent = `Error: ${err.message}`;
+    document.getElementById("token-display").innerHTML =
+      `<span style="color:#ff8389">Error: ${err.message}<br>Is the JWT server running?<br>Run: python scripts/jwt_server.py</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Fetch & Inspect Token";
+  }
+}
+
+/* Tab switching */
+function switchTab(btn, panelId) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById(panelId).classList.add("active");
+}
+
+/* Copy code */
+function copyCode(id) {
+  const el = document.getElementById(id);
+  const text = el ? el.textContent : "";
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = "Copy", 2000);
+  });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+checkJWTServer();
+setInterval(checkJWTServer, 10000);  // recheck every 10s
+</script>
+
+</body>
+</html>

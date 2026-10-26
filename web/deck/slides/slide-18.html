@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 18 — JWT token lifecycle | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 18 — JWT lifecycle</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-17.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-19.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 18 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 04</div>
+    <h2 class="slide-title">JWT token lifecycle</h2>
+  </div>
+  <div class="slide-body">
+    <div class="three-col">
+      <div class="col-block">
+        <h3>Token claims (RS256 payload)</h3>
+        <div class="code-block"><pre>{
+  <span class="cs">"iss"</span>: <span class="cn">"ibm_bob_assistant_demo"</span>,
+  <span class="cs">"sub"</span>: <span class="cn">"user-id or anon-uuid8"</span>,
+  <span class="cs">"aud"</span>: <span class="cn">"watsonx-orchestrate"</span>,
+  <span class="cs">"iat"</span>: <span class="cn">1700000000</span>,  <span class="cm">// issued-at</span>
+  <span class="cs">"exp"</span>: <span class="cn">1700003600</span>,  <span class="cm">// expiry</span>
+  <span class="cs">"jti"</span>: <span class="cn">"uuid-v4"</span>,    <span class="cm">// replay prev.</span>
+  <span class="cs">"name"</span>: <span class="cn">"Display name"</span> <span class="cm">// optional</span>
+}</pre></div>
+        <p style="font-size:.8125rem;color:var(--gray-50)">All fields follow the IBM watsonx Orchestrate JWT specification.</p>
+      </div>
+      <div class="col-block">
+        <h3>Token flow — browser to wxO</h3>
+        <ol style="font-size:.875rem;color:var(--gray-70);padding-left:1.25rem;line-height:1.8">
+          <li>Browser loads page with wxO widget script</li>
+          <li><code>wxoLoader.init()</code> is called</li>
+          <li>Widget calls <code>identityToken.getToken()</code></li>
+          <li>Browser fetches <code>GET :3001/api/token</code></li>
+          <li><code>jwt_server.py</code> signs token with private key</li>
+          <li>Widget sends JWT to wxO auth endpoint</li>
+          <li>wxO verifies JWT with uploaded public key</li>
+          <li>Session established — chat is active</li>
+          <li>Widget auto-refreshes token before expiry</li>
+        </ol>
+      </div>
+      <div class="col-block">
+        <h3>Environment variables</h3>
+        <div class="code-block"><pre><span class="cm"># Required</span>
+EMBED_PRIVATE_KEY_FILE=
+  keys/wxo_embed_private.pem
+
+<span class="cm"># Optional (with defaults)</span>
+JWT_SERVER_PORT=3001
+JWT_EXPIRY_SECONDS=3600
+JWT_AUDIENCE=watsonx-orchestrate
+ALLOWED_ORIGINS=
+  http://localhost:8080</pre></div>
+        <p style="font-size:.8125rem;color:var(--gray-50);margin-top:.5rem">All vars read from <code>.env</code> at startup. Never hard-coded. Maximum expiry: 7100 s (IBM hard limit).</p>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-17.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-19.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 18 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 18 / 20</span>
+</footer>
+</body>
+</html>

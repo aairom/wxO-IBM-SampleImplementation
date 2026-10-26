@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 04 — Sample agent architecture | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 04 — Sample agent architecture</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-03.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-05.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 4 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 01</div>
+    <h2 class="slide-title">Sample agent architecture</h2>
+  </div>
+  <div class="slide-body">
+    <div class="two-col">
+      <div class="col-content">
+        <h4>Agent layer</h4>
+        <p>The <code>ibm_bob_assistant</code> native agent is defined as a <code>react_core</code> agent in YAML and deployed via the <code>orchestrate</code> CLI. It references a Milvus-backed knowledge base containing 11 IBM Bob documentation files.</p>
+        <h4>Knowledge base</h4>
+        <p><code>ibm_bob_docs</code> KB indexes 11 <code>.txt</code> files covering IBM Bob features, modes, skills, MCP, security, and telemetry. Content is chunked and vectorized on import.</p>
+      </div>
+      <div class="col-content">
+        <h4>Tool layer</h4>
+        <p>Two <code>@tool</code>-decorated Python functions — <code>search_bob_documentation</code> and <code>get_bob_doc_section</code> — provide grounded retrieval against the KB. They enforce an allowlist of hostnames for SSRF protection.</p>
+        <h4>Deploy pipeline</h4>
+        <p><code>scripts/start.sh</code> runs a 9-step idempotent pipeline: authenticate, import KB, poll readiness, import tools, import agent, deploy to Live, regenerate embed config.</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="callout">
+      <strong>Architecture flow</strong>
+      User → ibm_bob_assistant (react_core) → ibm_bob_docs KB (Milvus) → @tool functions → grounded answer with source citation
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-03.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-05.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 4 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 4 / 20</span>
+</footer>
+</body>
+</html>

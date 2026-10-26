@@ -1,0 +1,65 @@
+# Environment variables — never commit secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environment
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Node modules
+node_modules/
+
+# Build artefacts
+*.onnx
+*.onnx.data
+*.so
+*.tgz
+*.tar.gz
+*.zip
+*.dylib
+
+# watsonx Orchestrate runtime caches
+.playwright-mcp/
+.bob/mcp.json
+
+# Project management rules — not for source control
+AGENTS.md
+
+# Input and output content — track folder structure, not content
+input/*
+!input/.gitkeep
+output/*
+!output/.gitkeep
+
+# Folders prefixed with underscore
+_*/
+
+# macOS metadata
+.DS_Store
+*.swp
+
+# Runtime log files — created by import_agent.py and other scripts
+logs/*
+!logs/.gitkeep
+
+# Symlink created by web server setup — Docs/ is tracked at project root
+web/Docs
+
+# RSA key pair for secured embed chat — NEVER commit private key
+keys/*
+!keys/.gitkeep
+
+# IBM Cloud API key file — NEVER commit (contains live credentials)
+apikey.json
+
+# Bob IDE configuration — personal workspace settings, not project artefacts
+.bob/
+
+# VS Code workspace settings — editor preferences, not project config
+.vscode/

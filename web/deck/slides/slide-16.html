@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Slide 16 — Secured embed — key facts | IBM watsonx Orchestrate</title>
+<link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-square">IBM</div>
+    IBM watsonx Orchestrate
+  </div>
+  <span class="deck-title">Embedded chat agent implementation</span>
+  <div class="header-right">
+    <a href="../index.html" class="btn-home">&#8679; Deck index</a>
+  </div>
+</header>
+<nav class="breadcrumb">
+  <a href="../index.html">Deck index</a>
+  <span class="sep">/</span>
+  <span class="current">Slide 16 — Secured — key facts</span>
+</nav>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-15.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-17.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 16 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<main class="main">
+<div class="slide-card">
+  <div class="slide-header">
+    <div class="slide-badge">Section 04</div>
+    <h2 class="slide-title">Secured embed — key facts</h2>
+  </div>
+  <div class="slide-body">
+    <div class="stats-row">
+      <div class="stat-item" style="border-color:var(--ibm-purple-60)">
+        <div class="stat-number" style="color:var(--ibm-purple-60)">RS256</div>
+        <div class="stat-claim">JWT signing algorithm — RSA-2048 asymmetric key pair; private key never leaves the server</div>
+      </div>
+      <div class="stat-item" style="border-color:var(--ibm-purple-60)">
+        <div class="stat-number" style="color:var(--ibm-purple-60);font-size:2.25rem">7100 s</div>
+        <div class="stat-claim">Maximum token lifetime enforced by IBM watsonx Orchestrate — default is 3600 s in <code>jwt_server.py</code></div>
+      </div>
+      <div class="stat-item" style="border-color:var(--ibm-purple-60)">
+        <div class="stat-number" style="color:var(--ibm-purple-60)">4</div>
+        <div class="stat-claim">Setup steps — generate keys, upload public key, start JWT server, add identityToken callback</div>
+      </div>
+    </div>
+    <p class="stat-source">Source: IBM watsonx Orchestrate secured embed documentation · <code>scripts/jwt_server.py</code></p>
+    <div class="callout mt-2" style="border-color:var(--ibm-purple-60);background:#f6f0ff">
+      <strong>Two-path decision</strong>
+      Choose <strong>unsecured</strong> (toggle OFF) for quick integration or non-sensitive public agents.
+      Choose <strong>secured JWT</strong> for production agents with user identity, audit trails, and enterprise access control.
+    </div>
+  </div>
+</div>
+</main>
+<nav class="slide-nav">
+  <div class="nav-btns">
+    <a href="slide-15.html" class="btn-nav secondary">&#8592; Prev</a>
+    <a href="slide-17.html" class="btn-nav">Next &#8594;</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:center">
+    <span class="slide-counter">Slide 16 of 20</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+  </div>
+  <a href="../index.html" class="btn-nav secondary" style="font-size:.8125rem">&#8679; All slides</a>
+</nav>
+<footer class="site-footer">
+  <span>IBM Confidential &nbsp;·&nbsp; IBM watsonx Orchestrate — embedded chat agent implementation</span>
+  <span>Slide 16 / 20</span>
+</footer>
+</body>
+</html>

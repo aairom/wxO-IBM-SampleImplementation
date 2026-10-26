@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  index.html — IBM Bob Documentation Assistant
+  Web chat integration demo page for the ibm_bob_assistant
+  watsonx Orchestrate native agent.
+
+  Architecture:
+    - This page hosts the wxO web-chat widget via the embed loader script
+    - webchat-config.js configures the widget and loads the wxoLoader.js
+    - The agent uses react_core reasoning over ibm_bob_docs KB + 2 coded tools
+    - All chat traffic goes to: https://api.eu-de.watson-orchestrate.cloud.ibm.com
+
+  Setup:
+    1. Run: bash scripts/get_webchat_embed.sh
+    2. Open this file in a browser, or serve via:
+       python3 -m http.server 8080 --directory web
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta name="description"
+    content="Ask IBM Bob Assistant any question about IBM Bob features, Bob Shell, enterprise plans, skills, MCP servers, and more." />
+
+  <!-- Content Security Policy — allows the wxO chat loader from IBM Cloud eu-de.
+       Note: *.eu-de.* wildcards match SUBDOMAINS only, not the apex domain itself.
+       The wxO loader lives at eu-de.watson-orchestrate.cloud.ibm.com (no subdomain),
+       so both the apex and the wildcard must be listed explicitly. -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src  'self' 'unsafe-inline'
+                https://eu-de.watson-orchestrate.cloud.ibm.com
+                https://api.eu-de.watson-orchestrate.cloud.ibm.com
+                https://*.watson.appdomain.cloud
+                https://*.eu-de.watson-orchestrate.cloud.ibm.com;
+    style-src   'self' 'unsafe-inline'
+                https://fonts.googleapis.com
+                https://eu-de.watson-orchestrate.cloud.ibm.com
+                https://*.eu-de.watson-orchestrate.cloud.ibm.com;
+    font-src    'self'
+                https://fonts.gstatic.com
+                https://1.www.s81c.com
+                https://eu-de.watson-orchestrate.cloud.ibm.com
+                https://*.eu-de.watson-orchestrate.cloud.ibm.com;
+    connect-src 'self'
+                https://eu-de.watson-orchestrate.cloud.ibm.com
+                https://api.eu-de.watson-orchestrate.cloud.ibm.com
+                https://*.eu-de.watson-orchestrate.cloud.ibm.com
+                https://*.watson.appdomain.cloud
+                wss://eu-de.watson-orchestrate.cloud.ibm.com
+                wss://*.eu-de.watson-orchestrate.cloud.ibm.com;
+    img-src     'self' data:
+                https://1.www.s81c.com
+                https://eu-de.watson-orchestrate.cloud.ibm.com
+                https://*.eu-de.watson-orchestrate.cloud.ibm.com;
+    frame-src   'none';
+  " />
+
+  <title>IBM Bob Assistant — Documentation Chat</title>
+
+  <!-- IBM Plex Sans — IBM's brand typeface -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* =========================================================================
+       CSS Custom Properties — IBM Design Language tokens
+       =========================================================================*/
+    :root {
+      /* IBM colour palette */
+      --ibm-blue-60:       #0043ce;
+      --ibm-blue-50:       #0f62fe;
+      --ibm-blue-40:       #4589ff;
+      --ibm-blue-10:       #edf5ff;
+      --ibm-cool-gray-100: #121619;
+      --ibm-cool-gray-90:  #21272a;
+      --ibm-cool-gray-80:  #343a3f;
+      --ibm-cool-gray-70:  #4d5358;
+      --ibm-cool-gray-50:  #697077;
+      --ibm-cool-gray-20:  #dde1e6;
+      --ibm-cool-gray-10:  #f2f4f8;
+      --ibm-white:         #ffffff;
+
+      /* Semantic tokens */
+      --color-bg:          var(--ibm-white);
+      --color-bg-subtle:   var(--ibm-cool-gray-10);
+      --color-surface:     var(--ibm-white);
+      --color-border:      var(--ibm-cool-gray-20);
+      --color-text:        var(--ibm-cool-gray-100);
+      --color-text-subtle: var(--ibm-cool-gray-50);
+      --color-accent:      var(--ibm-blue-50);
+      --color-accent-hover:var(--ibm-blue-60);
+      --color-accent-light:var(--ibm-blue-10);
+
+      /* Typography */
+      --font-sans:  'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono:  'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+      /* Spacing */
+      --space-1:   4px;
+      --space-2:   8px;
+      --space-3:   12px;
+      --space-4:   16px;
+      --space-5:   20px;
+      --space-6:   24px;
+      --space-8:   32px;
+      --space-10:  40px;
+      --space-12:  48px;
+      --space-16:  64px;
+
+      /* Layout */
+      --max-width: 1200px;
+      --header-height: 56px;
+
+      /* Transitions */
+      --transition: 150ms ease;
+    }
+
+    /* =========================================================================
+       Reset & Base
+       =========================================================================*/
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--color-text);
+      background-color: var(--color-bg);
+      min-height: 100vh;
+      /* Reserve bottom space so the chat launcher doesn't overlap content */
+      padding-bottom: 80px;
+    }
+
+    a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+
+    img { display: block; max-width: 100%; }
+
+    /* =========================================================================
+       Skip link — accessibility
+       =========================================================================*/
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: var(--space-4);
+      background: var(--color-accent);
+      color: var(--ibm-white);
+      padding: var(--space-2) var(--space-4);
+      border-radius: 0 0 4px 4px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 9999;
+      transition: top var(--transition);
+    }
+    .skip-link:focus { top: 0; }
+
+    /* =========================================================================
+       Header / Navigation
+       =========================================================================*/
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--header-height);
+      background: var(--ibm-cool-gray-100);
+      border-bottom: 1px solid var(--ibm-cool-gray-80);
+      display: flex;
+      align-items: center;
+    }
+
+    .header-inner {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 var(--space-6);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    /* IBM logo wordmark (SVG inline) */
+    .ibm-logo {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .ibm-logo svg { height: 22px; width: auto; }
+
+    .header-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--ibm-cool-gray-70);
+      flex-shrink: 0;
+    }
+
+    .header-product-name {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--ibm-cool-gray-20);
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .header-nav {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .header-nav a {
+      display: inline-flex;
+      align-items: center;
+      height: var(--header-height);
+      padding: 0 var(--space-4);
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--ibm-cool-gray-20);
+      border-bottom: 2px solid transparent;
+      transition: color var(--transition), border-color var(--transition);
+      text-decoration: none;
+    }
+    .header-nav a:hover {
+      color: var(--ibm-white);
+      border-bottom-color: var(--ibm-blue-40);
+    }
+
+    /* Open Chat button in header */
+    .btn-open-chat {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      height: 32px;
+      padding: 0 var(--space-4);
+      background: var(--color-accent);
+      color: var(--ibm-white) !important;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 0;
+      border: none;
+      cursor: pointer;
+      transition: background var(--transition);
+      text-decoration: none !important;
+      border-bottom: none !important;
+    }
+    .btn-open-chat:hover { background: var(--color-accent-hover) !important; }
+
+    /* =========================================================================
+       Hero section
+       =========================================================================*/
+    .hero {
+      background: var(--ibm-cool-gray-90);
+      color: var(--ibm-white);
+      padding: var(--space-16) var(--space-6);
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ibm-blue-40);
+      margin-bottom: var(--space-4);
+    }
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 300;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      margin-bottom: var(--space-5);
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero h1 strong {
+      font-weight: 600;
+      color: var(--ibm-white);
+    }
+
+    .hero-description {
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--ibm-cool-gray-20);
+      max-width: 600px;
+      margin: 0 auto var(--space-8);
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      height: 48px;
+      padding: 0 var(--space-6);
+      background: var(--color-accent);
+      color: var(--ibm-white);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: background var(--transition);
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      background: var(--color-accent-hover);
+      text-decoration: none;
+      color: var(--ibm-white);
+    }
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--ibm-blue-40);
+      outline-offset: 2px;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      height: 48px;
+      padding: 0 var(--space-6);
+      background: transparent;
+      color: var(--ibm-white);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 400;
+      border: 1px solid var(--ibm-cool-gray-50);
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition);
+      text-decoration: none;
+    }
+    .btn-secondary:hover {
+      border-color: var(--ibm-white);
+      background: rgba(255,255,255,0.05);
+      text-decoration: none;
+      color: var(--ibm-white);
+    }
+
+    /* =========================================================================
+       Status bar
+       =========================================================================*/
+    .status-bar {
+      background: var(--color-bg-subtle);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-3) var(--space-6);
+    }
+    .status-bar-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      align-items: center;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 13px;
+      color: var(--color-text-subtle);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #24a148; /* IBM Green 50 — live/healthy */
+      flex-shrink: 0;
+    }
+    .status-dot.pending { background: #f1c21b; } /* IBM Yellow 30 */
+    .status-dot.error   { background: #da1e28; } /* IBM Red 60 */
+    .status-label { font-weight: 500; color: var(--color-text); }
+
+    /* =========================================================================
+       Main content area
+       =========================================================================*/
+    main {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-12) var(--space-6);
+    }
+
+    /* =========================================================================
+       Section headers
+       =========================================================================*/
+    .section-header {
+      margin-bottom: var(--space-8);
+    }
+    .section-label {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: var(--space-2);
+    }
+    .section-header h2 {
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: 300;
+      line-height: 1.3;
+    }
+    .section-header p {
+      margin-top: var(--space-3);
+      font-size: 16px;
+      color: var(--color-text-subtle);
+      max-width: 600px;
+    }
+
+    /* =========================================================================
+       Starter prompts grid
+       =========================================================================*/
+    .prompts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-4);
+      margin-bottom: var(--space-12);
+    }
+
+    .prompt-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: var(--space-5);
+      cursor: pointer;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      text-align: left;
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .prompt-card:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 2px 8px rgba(15, 98, 254, 0.12);
+    }
+    .prompt-card:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    .prompt-card-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text);
+      line-height: 1.3;
+    }
+    .prompt-card-meta {
+      font-size: 12px;
+      color: var(--color-text-subtle);
+      font-family: var(--font-mono);
+    }
+    /* Arrow indicator */
+    .prompt-card::after {
+      content: '→';
+      display: block;
+      font-size: 16px;
+      color: var(--color-accent);
+      margin-top: auto;
+    }
+
+    /* =========================================================================
+       Architecture section
+       =========================================================================*/
+    .arch-section {
+      margin-bottom: var(--space-12);
+    }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+
+    .arch-card {
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-accent);
+      padding: var(--space-5);
+    }
+    .arch-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+      font-family: var(--font-mono);
+      color: var(--color-text);
+    }
+    .arch-card-kind {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: var(--color-accent-light);
+      color: var(--color-accent);
+      padding: 2px 8px;
+      border-radius: 2px;
+      margin-bottom: var(--space-3);
+    }
+    .arch-card-description {
+      font-size: 13px;
+      color: var(--color-text-subtle);
+      line-height: 1.5;
+    }
+
+    /* =========================================================================
+       Knowledge base document list
+       =========================================================================*/
+    .kb-docs {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+    .kb-doc-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--color-text-subtle);
+    }
+    .kb-doc-item::before {
+      content: '📄';
+      font-style: normal;
+    }
+
+    /* =========================================================================
+       Code block
+       =========================================================================*/
+    .code-block {
+      background: var(--ibm-cool-gray-90);
+      color: #f2f4f8;
+      padding: var(--space-5);
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      border-left: 3px solid var(--color-accent);
+      margin: var(--space-4) 0;
+    }
+    .code-block .comment { color: #6f6f6f; }
+    .code-block .key     { color: #78a9ff; }
+    .code-block .string  { color: #42be65; }
+    .code-block .func    { color: #ee5396; }
+
+    /* =========================================================================
+       Footer
+       =========================================================================*/
+    footer {
+      border-top: 1px solid var(--color-border);
+      padding: var(--space-8) var(--space-6);
+      background: var(--color-bg-subtle);
+    }
+    .footer-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .footer-copy {
+      font-size: 13px;
+      color: var(--color-text-subtle);
+    }
+    .footer-links {
+      display: flex;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: var(--color-text-subtle);
+    }
+    .footer-links a:hover { color: var(--color-text); }
+
+    /* =========================================================================
+       wxO chat widget root — positioned fixed bottom-right by the wxO loader
+       (rootElementID: "wxo-chat-root")
+       =========================================================================*/
+    #wxo-chat-root {
+      /* The wxO loader positions the widget itself.
+         This div just needs to exist in the DOM. */
+    }
+
+    /* =========================================================================
+       Responsive adjustments
+       =========================================================================*/
+    @media (max-width: 768px) {
+      .header-nav a:not(.btn-open-chat) { display: none; }
+      .hero { padding: var(--space-12) var(--space-4); }
+      main  { padding: var(--space-8) var(--space-4); }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-secondary { width: 100%; max-width: 320px; justify-content: center; }
+      .status-bar-inner { gap: var(--space-4); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Skip to main content — keyboard / screen reader navigation -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- =========================================================================
+       Header
+       =========================================================================-->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <!-- IBM wordmark SVG (official 8-bar IBM logo) -->
+      <div class="ibm-logo" aria-label="IBM">
+        <svg viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0"  y="0"  width="60" height="3"  fill="#1192e8"/>
+          <rect x="0"  y="5"  width="60" height="3"  fill="#1192e8"/>
+          <rect x="8"  y="10" width="44" height="3"  fill="#1192e8"/>
+          <rect x="8"  y="15" width="44" height="3"  fill="#1192e8"/>
+          <rect x="0"  y="20" width="60" height="3"  fill="#1192e8"/>
+        </svg>
+      </div>
+
+      <div class="header-divider" aria-hidden="true"></div>
+
+      <span class="header-product-name">
+        watsonx Orchestrate — Bob Documentation Assistant
+      </span>
+
+      <nav class="header-nav" aria-label="Site navigation">
+        <a href="#how-it-works">How it works</a>
+        <a href="#architecture">Architecture</a>
+        <a href="Docs/WebChat_Integration_Guide.md">Docs</a>
+        <a href="embed-docs.html">Embed Guide</a>
+        <button
+          class="btn-open-chat"
+          onclick="openChat()"
+          aria-label="Open IBM Bob chat assistant"
+        >
+          <!-- Chat bubble icon -->
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 1C4.1 1 1 3.8 1 7.2c0 1.7.7 3.3 2 4.4L2 14l3-1.1c.9.4 1.9.6 3 .6 3.9 0 7-2.8 7-6.2S11.9 1 8 1z"/>
+          </svg>
+          Ask Bob
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       Hero
+       =========================================================================-->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-eyebrow" aria-hidden="true">
+      Powered by watsonx Orchestrate
+    </div>
+    <h1 id="hero-heading">
+      Ask anything about <strong>IBM Bob</strong>
+    </h1>
+    <p class="hero-description">
+      Get instant, grounded answers from the official IBM Bob documentation.
+      Every response is sourced from the live knowledge base — no hallucinations,
+      always cited.
+    </p>
+    <div class="hero-actions">
+      <button
+        class="btn-primary"
+        onclick="openChat()"
+        aria-label="Open IBM Bob Documentation Assistant chat"
+      >
+        <!-- Chat icon -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M10 2C5.6 2 2 5.2 2 9.2c0 2 .9 3.9 2.4 5.2L3.5 17l3.3-1.2c1 .4 2.1.6 3.2.6 4.4 0 8-3.2 8-7.2S14.4 2 10 2z"/>
+        </svg>
+        Start chatting
+      </button>
+      <a
+        class="btn-secondary"
+        href="Docs/WebChat_Integration_Guide.md"
+        aria-label="Read integration documentation"
+      >
+        Integration docs →
+      </a>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Status bar — agent health indicators
+       =========================================================================-->
+  <div class="status-bar" role="status" aria-live="polite" aria-label="System status">
+    <div class="status-bar-inner">
+      <div class="status-item">
+        <span class="status-dot" id="dot-agent"></span>
+        <span class="status-label">ibm_bob_assistant</span>
+        <span id="status-agent">Checking…</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="dot-kb"></span>
+        <span class="status-label">ibm_bob_docs KB</span>
+        <span id="status-kb">11 documents · Milvus</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot"></span>
+        <span class="status-label">search_bob_documentation</span>
+        <span>Coded tool · READ_ONLY</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot"></span>
+        <span class="status-label">get_bob_doc_section</span>
+        <span>Coded tool · READ_ONLY</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot"></span>
+        <span class="status-label">Region</span>
+        <span>eu-de (Frankfurt)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Main content
+       =========================================================================-->
+  <main id="main-content">
+
+    <!-- -----------------------------------------------------------------------
+         Section: Starter prompts
+         Each button opens the chat and pre-fills a message that exercises
+         a specific retrieval path (KB, search_bob_documentation, or
+         get_bob_doc_section).
+         ----------------------------------------------------------------------- -->
+    <section aria-labelledby="prompts-heading" id="how-it-works">
+      <div class="section-header">
+        <p class="section-label">Try it now</p>
+        <h2 id="prompts-heading">Ask a question to get started</h2>
+        <p>
+          Each prompt below exercises a different part of the agent:
+          the vector KB, the semantic search tool, or the section retrieval tool.
+        </p>
+      </div>
+
+      <!-- Populated by renderStarterPrompts() below -->
+      <div class="prompts-grid" id="prompts-grid" role="list"
+           aria-label="Suggested questions for IBM Bob Assistant">
+      </div>
+    </section>
+
+    <!-- -----------------------------------------------------------------------
+         Section: Architecture
+         ----------------------------------------------------------------------- -->
+    <section aria-labelledby="arch-heading" id="architecture">
+      <div class="section-header">
+        <p class="section-label">Under the hood</p>
+        <h2 id="arch-heading">How the agent works</h2>
+        <p>
+          <code>ibm_bob_assistant</code> uses a <strong>react_core</strong> reasoning loop
+          to combine vector KB retrieval with two coded tools, grounding every answer
+          in the official IBM Bob documentation.
+        </p>
+      </div>
+
+      <div class="arch-grid" role="list">
+
+        <article class="arch-card" role="listitem">
+          <div class="arch-card-title">ibm_bob_assistant</div>
+          <span class="arch-card-kind">Native Agent</span>
+          <p class="arch-card-description">
+            react_core LLM reasoning loop. Memory enabled.
+            Grounded system prompt. Deployed (Live) on eu-de.
+          </p>
+        </article>
+
+        <article class="arch-card" role="listitem">
+          <div class="arch-card-title">search_bob_documentation</div>
+          <span class="arch-card-kind">Coded Tool</span>
+          <p class="arch-card-description">
+            Semantic search over the Bob internal search API.
+            Returns ranked passages with source URLs.
+            Input: <code>query: str</code>
+          </p>
+        </article>
+
+        <article class="arch-card" role="listitem">
+          <div class="arch-card-title">get_bob_doc_section</div>
+          <span class="arch-card-kind">Coded Tool</span>
+          <p class="arch-card-description">
+            Retrieves full text for a named section from the
+            knowledge-base files. Returns up to 4,000 characters.
+            Input: <code>section_name: str</code>
+          </p>
+        </article>
+
+        <article class="arch-card" role="listitem">
+          <div class="arch-card-title">ibm_bob_docs</div>
+          <span class="arch-card-kind">Knowledge Base</span>
+          <p class="arch-card-description">
+            11 IBM Bob documentation files indexed in Milvus.
+            Ready: True. Queried automatically by react_core.
+          </p>
+        </article>
+
+        <article class="arch-card" role="listitem">
+          <div class="arch-card-title">groq/openai/gpt-oss-120b</div>
+          <span class="arch-card-kind">LLM</span>
+          <p class="arch-card-description">
+            Platform-managed LLM backend for synthesis, reasoning,
+            and response generation. Hosted on IBM Cloud eu-de.
+          </p>
+        </article>
+
+        <article class="arch-card" role="listitem">
+          <div class="arch-card-title">Web Chat Widget</div>
+          <span class="arch-card-kind">Channel</span>
+          <p class="arch-card-description">
+            wxO embedded web-chat loader. Loaded from
+            <code>hostURL/wxochat/wxoLoader.js</code>.
+            Configured via <code>window.wxOConfiguration</code>.
+          </p>
+        </article>
+
+      </div>
+
+      <!-- KB document list -->
+      <h3 style="margin: var(--space-8) 0 var(--space-3); font-size: 16px; font-weight: 500;">
+        Knowledge base documents (11)
+      </h3>
+      <div class="kb-docs" role="list" aria-label="Knowledge base document files">
+        <div class="kb-doc-item" role="listitem">01_overview.txt</div>
+        <div class="kb-doc-item" role="listitem">02_bob_shell.txt</div>
+        <div class="kb-doc-item" role="listitem">03_enterprise.txt</div>
+        <div class="kb-doc-item" role="listitem">04_premium_packages.txt</div>
+        <div class="kb-doc-item" role="listitem">05_skills.txt</div>
+        <div class="kb-doc-item" role="listitem">06_mcp.txt</div>
+        <div class="kb-doc-item" role="listitem">07_security.txt</div>
+        <div class="kb-doc-item" role="listitem">08_telemetry.txt</div>
+        <div class="kb-doc-item" role="listitem">09_modes.txt</div>
+        <div class="kb-doc-item" role="listitem">10_bobcoins.txt</div>
+        <div class="kb-doc-item" role="listitem">11_bobalytics.txt</div>
+      </div>
+    </section>
+
+    <!-- -----------------------------------------------------------------------
+         Section: Embed code reference
+         ----------------------------------------------------------------------- -->
+    <section aria-labelledby="embed-heading" style="margin-top: var(--space-12);">
+      <div class="section-header">
+        <p class="section-label">For developers</p>
+        <h2 id="embed-heading">Embedding the chat widget</h2>
+        <p>
+          Add this snippet to any HTML page to embed the IBM Bob Assistant chat.
+          The values are generated by running
+          <code style="font-family: var(--font-mono); font-size: 14px; background: var(--color-bg-subtle); padding: 2px 6px;">bash scripts/get_webchat_embed.sh</code>.
+        </p>
+      </div>
+
+      <pre class="code-block" aria-label="Web chat embed code snippet"><code
+><span class="comment">// 1. Configure the widget</span>
+<span class="key">window</span>.wxOConfiguration = {
+  <span class="key">orchestrationID</span>: <span class="string">"&lt;from: orchestrate channels webchat embed&gt;"</span>,
+  <span class="key">hostURL</span>:         <span class="string">"https://api.eu-de.watson-orchestrate.cloud.ibm.com"</span>,
+  <span class="key">rootElementID</span>:   <span class="string">"wxo-chat-root"</span>,
+  <span class="key">showLauncher</span>:    <span class="key">true</span>,
+  <span class="key">crn</span>:             <span class="string">"crn:v1:bluemix:public:..."</span>,
+  <span class="key">deploymentPlatform</span>: <span class="string">"ibmcloud"</span>,
+  <span class="key">chatOptions</span>: {
+    <span class="key">agentId</span>:            <span class="string">"&lt;agent UUID&gt;"</span>,
+    <span class="key">agentEnvironmentId</span>: <span class="string">"&lt;live env UUID&gt;"</span>
+  }
+};
+
+<span class="comment">// 2. Load the wxO chat loader asynchronously</span>
+<span class="func">setTimeout</span>(<span class="key">function</span>() {
+  <span class="key">const</span> script = document.<span class="func">createElement</span>(<span class="string">"script"</span>);
+  script.src = <span class="string">`${window.wxOConfiguration.hostURL}/wxochat/wxoLoader.js?embed=true`</span>;
+  script.<span class="func">addEventListener</span>(<span class="string">"load"</span>, () => wxoLoader.<span class="func">init</span>());
+  document.head.<span class="func">appendChild</span>(script);
+}, 0);</code></pre>
+
+      <p style="font-size: 14px; color: var(--color-text-subtle); margin-top: var(--space-3);">
+        See
+        <a href="Docs/WebChat_Integration_Guide.md">Docs/WebChat_Integration_Guide.md</a>
+        for the full integration guide, security considerations, and troubleshooting.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       Footer
+       =========================================================================-->
+  <footer role="contentinfo">
+    <div class="footer-inner">
+      <p class="footer-copy">
+        © 2024 IBM Corporation — IBM Bob Documentation Assistant
+      </p>
+      <nav class="footer-links" aria-label="Footer links">
+        <a href="https://eu-de.watson-orchestrate.cloud.ibm.com" target="_blank" rel="noopener">
+          watsonx Orchestrate
+        </a>
+        <a href="https://bob.ibm.com/docs/" target="_blank" rel="noopener">
+          IBM Bob Docs
+        </a>
+        <a href="Docs/WebChat_Integration_Guide.md">Integration Guide</a>
+        <a href="Docs/Quickstart.md">Quickstart</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       wxO web-chat widget mount point
+       The wxO loader positions the chat bubble in the bottom-right corner
+       and uses this div as its host root.
+       =========================================================================-->
+  <div id="wxo-chat-root"
+       role="complementary"
+       aria-label="IBM Bob Documentation Assistant chat widget">
+  </div>
+
+  <!-- =========================================================================
+       Page scripts
+       =========================================================================-->
+
+  <!--
+    webchat-config.js:
+      - Sets window.wxOConfiguration with platform IDs
+      - Dynamically loads wxoLoader.js from the hostURL
+      - Calls wxoLoader.init() on load
+      - Exposes: openChat(), closeChat(), sendChatMessage(msg)
+      - Exposes: window.ibmBobStarterPrompts[]
+
+    IMPORTANT: webchat-config.js is GENERATED by scripts/get_webchat_embed.sh.
+    Run that script to populate the real orchestrationID, agentId, etc.
+  -->
+  <script src="webchat-config.js"></script>
+
+  <script>
+    // =========================================================================
+    // Page initialisation
+    // =========================================================================
+
+    /**
+     * Render the starter prompt cards from the config array.
+     * Each card opens the chat and sends the preset query.
+     */
+    function renderStarterPrompts() {
+      const grid = document.getElementById("prompts-grid");
+      if (!grid || !window.ibmBobStarterPrompts) return;
+
+      window.ibmBobStarterPrompts.forEach(function (prompt) {
+        const card = document.createElement("button");
+        card.className = "prompt-card";
+        card.setAttribute("role", "listitem");
+        card.setAttribute("aria-label", "Ask: " + prompt.query);
+        card.innerHTML = `
+          <span class="prompt-card-label">${escapeHtml(prompt.label)}</span>
+          <span class="prompt-card-meta">via ${escapeHtml(prompt.path)}</span>
+        `;
+        card.addEventListener("click", function () {
+          openChat();
+          // Small delay to ensure chat window is open before sending
+          setTimeout(function () {
+            sendChatMessage(prompt.query);
+          }, 400);
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    /**
+     * Minimal HTML escaping — prevents XSS from prompt strings.
+     * @param {string} str
+     * @returns {string}
+     */
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g,  "&amp;")
+        .replace(/</g,  "&lt;")
+        .replace(/>/g,  "&gt;")
+        .replace(/"/g,  "&quot;")
+        .replace(/'/g,  "&#39;");
+    }
+
+    /**
+     * Update the status indicators in the status bar.
+     * In production this could poll the wxO API for real health data.
+     * Here we set static "Live" state matching what the CLI confirmed.
+     */
+    function updateStatusIndicators() {
+      const dotAgent = document.getElementById("dot-agent");
+      const statusAgent = document.getElementById("status-agent");
+
+      // Agent is known to be Live (we ran orchestrate agents deploy earlier)
+      if (dotAgent)    dotAgent.className = "status-dot"; // green
+      if (statusAgent) statusAgent.textContent = "Live";
+    }
+
+    // =========================================================================
+    // Init
+    // =========================================================================
+    document.addEventListener("DOMContentLoaded", function () {
+      renderStarterPrompts();
+      updateStatusIndicators();
+    });
+  </script>
+</body>
+</html>

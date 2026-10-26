@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <title>Embed Docs Hub — IBM wxO Chat</title>
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src  'self' 'unsafe-inline';
+    style-src   'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src    'self' https://fonts.gstatic.com;
+    connect-src 'self';
+    img-src     'self' data:;
+    frame-src   'none';
+  " />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --ibm-blue:    #0f62fe;
+      --ibm-green:   #24a148;
+      --ibm-yellow:  #f1c21b;
+      --ibm-red:     #da1e28;
+      --ibm-purple:  #7c3dd1;
+      --bg:          #ffffff;
+      --bg-subtle:   #f4f4f4;
+      --border:      #e0e0e0;
+      --text:        #161616;
+      --text-subtle: #525252;
+      --mono:        'IBM Plex Mono', monospace;
+      --sans:        'IBM Plex Sans', system-ui, sans-serif;
+      --radius:      4px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+    a { color: var(--ibm-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { font-family: var(--mono); font-size: 13px; background: var(--bg-subtle); padding: 1px 5px; border-radius: 3px; }
+
+    /* ── Topbar ── */
+    .topbar { background: var(--text); color:#fff; padding:10px 24px; display:flex; align-items:center; gap:16px; font-size:13px; }
+    .topbar-links { margin-left:auto; display:flex; gap:16px; }
+    .topbar-links a { color:#c6c6c6; }
+    .topbar-links a:hover { color:#fff; }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--text); color:#fff;
+      padding: 56px 40px 52px;
+    }
+    .hero-eyebrow { font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:#78a9ff; margin-bottom:12px; }
+    .hero h1 { font-size:clamp(28px,4vw,44px); font-weight:300; line-height:1.2; margin-bottom:16px; }
+    .hero h1 strong { font-weight:600; }
+    .hero-desc { max-width:640px; color:#c6c6c6; font-size:16px; line-height:1.7; }
+
+    /* ── Mode cards ── */
+    .modes { display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:960px; margin:40px auto; padding:0 24px; }
+    .mode-card {
+      border: 2px solid var(--border);
+      border-radius: 8px; padding:32px 28px;
+      display:flex; flex-direction:column; gap:12px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .mode-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+    .mode-card.unsecured { border-top: 4px solid var(--ibm-green); }
+    .mode-card.secured   { border-top: 4px solid var(--ibm-purple); }
+    .mode-icon { font-size:32px; }
+    .mode-label { font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; }
+    .mode-card.unsecured .mode-label { color: var(--ibm-green); }
+    .mode-card.secured   .mode-label { color: var(--ibm-purple); }
+    .mode-card h2 { font-size:22px; font-weight:600; }
+    .mode-card p  { color:var(--text-subtle); font-size:14px; line-height:1.6; flex:1; }
+    .mode-badge-row { display:flex; flex-wrap:wrap; gap:6px; }
+    .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; }
+    .badge-green  { background:rgba(36,161,72,.1);   color:#198038;  border:1px solid rgba(36,161,72,.3); }
+    .badge-yellow { background:rgba(241,194,27,.15); color:#7a4c00;  border:1px solid rgba(241,194,27,.4); }
+    .badge-purple { background:rgba(124,61,209,.1);  color:#6929c4;  border:1px solid rgba(124,61,209,.3); }
+    .badge-blue   { background:rgba(15,98,254,.1);   color:#0043ce;  border:1px solid rgba(15,98,254,.3); }
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      padding:12px 20px; border-radius:var(--radius); font-family:var(--sans);
+      font-size:14px; font-weight:500; cursor:pointer; text-decoration:none;
+      transition:all .15s; border:none;
+    }
+    .btn-primary { background:var(--ibm-blue); color:#fff; }
+    .btn-primary:hover { background:#0353e9; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+    .btn-outline:hover { background:var(--bg-subtle); border-color:#525252; }
+    .btn-green  { background:var(--ibm-green); color:#fff; }
+    .btn-green:hover { background:#198038; }
+    .btn-purple { background:var(--ibm-purple); color:#fff; }
+    .btn-purple:hover { background:#6929c4; }
+
+    /* ── Content ── */
+    .content { max-width:960px; margin:0 auto; padding:40px 24px 80px; }
+    section { margin-bottom:56px; }
+    .section-label { font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-subtle); margin-bottom:8px; }
+    h2.section-title { font-size:24px; font-weight:600; margin-bottom:8px; }
+    h3 { font-size:17px; font-weight:600; margin-bottom:8px; }
+    p  { color:var(--text-subtle); line-height:1.7; margin-bottom:12px; }
+
+    /* ── Comparison table ── */
+    .table-wrap { overflow-x:auto; margin:20px 0; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    thead tr { background:var(--text); color:#fff; }
+    th, td { padding:11px 16px; text-align:left; border-bottom:1px solid var(--border); }
+    th { font-weight:500; }
+    tbody tr:nth-child(even) { background:var(--bg-subtle); }
+    .yes { color:var(--ibm-green); font-weight:600; }
+    .no  { color:var(--ibm-red);   font-weight:600; }
+    .na  { color:var(--text-subtle); }
+
+    /* ── Flow diagram ── */
+    .flow-container { overflow-x:auto; padding:8px 0; }
+    .flow { display:flex; align-items:stretch; gap:0; min-width:600px; margin:16px 0; }
+    .flow-step {
+      flex:1; background:var(--bg-subtle); border:1px solid var(--border);
+      padding:14px 12px; text-align:center; font-size:12px;
+      display:flex; flex-direction:column; gap:4px; justify-content:center;
+    }
+    .flow-step:first-child { border-radius:var(--radius) 0 0 var(--radius); }
+    .flow-step:last-child  { border-radius:0 var(--radius) var(--radius) 0; }
+    .flow-step strong { font-size:13px; }
+    .flow-step span   { color:var(--text-subtle); }
+    .flow-arrow-col {
+      width:32px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px; color:var(--text-subtle);
+    }
+    .flow-step.hl-green  { background:#defbe6; border-color:rgba(36,161,72,.4); }
+    .flow-step.hl-purple { background:#f6f2ff; border-color:rgba(124,61,209,.4); }
+    .flow-step.hl-blue   { background:#edf5ff; border-color:rgba(15,98,254,.3); }
+
+    /* ── Callout ── */
+    .callout { border-left:4px solid; padding:14px 18px; border-radius:0 var(--radius) var(--radius) 0; margin:20px 0; font-size:14px; line-height:1.6; }
+    .callout-blue   { border-color:var(--ibm-blue);   background:#edf5ff; color:#001d6c; }
+    .callout-yellow { border-color:var(--ibm-yellow); background:#fdf6c3; color:#7a4c00; }
+    .callout-green  { border-color:var(--ibm-green);  background:#defbe6; color:#0e6027; }
+    .callout strong { font-weight:600; }
+
+    /* ── Error codes ── */
+    .error-table { width:100%; border-collapse:collapse; font-size:13px; margin:16px 0; }
+    .error-table th, .error-table td { padding:10px 14px; border-bottom:1px solid var(--border); text-align:left; }
+    .error-table thead { background:var(--bg-subtle); }
+    .error-table code { background:none; padding:0; font-size:12px; color:var(--ibm-red); }
+
+    /* ── Sidebar layout ── */
+    .doc-layout { display:grid; grid-template-columns:220px 1fr; gap:32px; }
+    .doc-nav { position:sticky; top:20px; align-self:start; }
+    .doc-nav ul { list-style:none; border-left:2px solid var(--border); padding-left:16px; }
+    .doc-nav li { margin-bottom:8px; }
+    .doc-nav a { font-size:13px; color:var(--text-subtle); }
+    .doc-nav a:hover, .doc-nav a.active { color:var(--ibm-blue); }
+    .doc-nav .nav-section { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-subtle); margin:16px 0 6px; }
+
+    /* ── Footer ── */
+    footer { background:var(--text); color:#c6c6c6; padding:24px 40px; font-size:13px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    footer a { color:#78a9ff; }
+
+    @media(max-width:768px){
+      .modes { grid-template-columns:1fr; }
+      .doc-layout { grid-template-columns:1fr; }
+      .doc-nav { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<div class="topbar">
+  <span style="font-weight:600">IBM wxO Embedded Chat</span>
+  <div class="topbar-links">
+    <a href="index.html">Home</a>
+    <a href="demo-unsecured.html">Unsecured Demo</a>
+    <a href="demo-secured.html">Secured Demo</a>
+  </div>
+</div>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <p class="hero-eyebrow">Developer documentation</p>
+  <h1>Embed the IBM Bob Agent<br><strong>in Any Web Application</strong></h1>
+  <p class="hero-desc">
+    Two implementation modes, full working examples, RSA key generation,
+    JWT signing server, and step-by-step tenant configuration —
+    everything you need to go from "Authentication Error" to a live chat widget.
+  </p>
+</div>
+
+<!-- ── Mode selector cards ── -->
+<div class="modes">
+
+  <div class="mode-card unsecured">
+    <div class="mode-icon">🔓</div>
+    <div class="mode-label">Mode 1 — Anonymous</div>
+    <h2>Unsecured Embed</h2>
+    <p>
+      Simplest setup. Disable embed security on the wxO tenant once,
+      then drop the embed script into any HTML page.  No backend, no keys,
+      no JWT.  Best for public demos and prototypes.
+    </p>
+    <div class="mode-badge-row">
+      <span class="badge badge-green">No backend required</span>
+      <span class="badge badge-yellow">Anonymous access</span>
+      <span class="badge badge-blue">1 prerequisite</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <a href="demo-unsecured.html" class="btn btn-green">Live demo →</a>
+      <a href="#unsecured-guide" class="btn btn-outline">Guide ↓</a>
+    </div>
+  </div>
+
+  <div class="mode-card secured">
+    <div class="mode-icon">🔒</div>
+    <div class="mode-label">Mode 2 — JWT Secured</div>
+    <h2>Secured Embed</h2>
+    <p>
+      Production-grade.  RSA-2048 key pair, short-lived JWT tokens signed
+      by your backend, user identity propagated to the agent.  Required for
+      enterprise agents with access to sensitive systems.
+    </p>
+    <div class="mode-badge-row">
+      <span class="badge badge-purple">RSA-2048 + RS256</span>
+      <span class="badge badge-blue">User identity</span>
+      <span class="badge badge-green">Production-ready</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <a href="demo-secured.html" class="btn btn-purple">Live demo →</a>
+      <a href="#secured-guide" class="btn btn-outline">Guide ↓</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Main content ── -->
+<div class="content">
+<div class="doc-layout">
+
+  <!-- ── Sidebar nav ── -->
+  <nav class="doc-nav" aria-label="Documentation sections">
+    <div class="nav-section">Overview</div>
+    <ul>
+      <li><a href="#why-auth">Why authentication?</a></li>
+      <li><a href="#comparison">Mode comparison</a></li>
+    </ul>
+    <div class="nav-section">Unsecured</div>
+    <ul>
+      <li><a href="#unsecured-guide">How it works</a></li>
+      <li><a href="#unsecured-prereq">Prerequisites</a></li>
+      <li><a href="#unsecured-code">Embed code</a></li>
+    </ul>
+    <div class="nav-section">Secured (JWT)</div>
+    <ul>
+      <li><a href="#secured-guide">Architecture</a></li>
+      <li><a href="#rsa-keygen">Key generation</a></li>
+      <li><a href="#jwt-server">JWT server</a></li>
+      <li><a href="#secured-code">Embed code</a></li>
+    </ul>
+    <div class="nav-section">Reference</div>
+    <ul>
+      <li><a href="#network-requests">Network requests</a></li>
+      <li><a href="#error-codes">Error codes</a></li>
+      <li><a href="#csp">CSP headers</a></li>
+      <li><a href="#files">File reference</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Docs body ── -->
+  <div>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         Why authentication?
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="why-auth">
+      <p class="section-label">Background</p>
+      <h2 class="section-title">Why does the embed require authentication?</h2>
+      <p>
+        IBM watsonx Orchestrate embedded chat security is <strong>enabled by default</strong>
+        on every instance.  Until either:
+      </p>
+      <ul style="margin:8px 0 12px 20px; color:var(--text-subtle); line-height:2">
+        <li>A valid RSA public key is registered with the tenant (secured mode), or</li>
+        <li>Security is explicitly disabled (unsecured mode)</li>
+      </ul>
+      <p>
+        …every chat authentication attempt returns HTTP 401 with
+        <code>WXO-PROXY-10080E</code> ("kid is not found in the customer's token"),
+        which the widget surfaces as the <strong>"Authentication Error / Agent fetching failed"</strong>
+        banner you see in the screenshot.
+      </p>
+      <div class="callout callout-blue">
+        <strong>The widget loads (wxoLoader.js → HTTP 200) but the auth ticket call
+        fails.</strong>  This is a tenant configuration issue, not a code error.
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         Comparison table
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="comparison">
+      <p class="section-label">Decision guide</p>
+      <h2 class="section-title">Unsecured vs Secured — full comparison</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:35%">Feature</th>
+              <th>🔓 Unsecured</th>
+              <th>🔒 Secured (JWT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Backend server required</td><td class="no">No</td><td class="yes">Yes (JWT signer)</td></tr>
+            <tr><td>RSA key pair required</td><td class="no">No</td><td class="yes">Yes</td></tr>
+            <tr><td>Tenant configuration</td><td>Disable security toggle</td><td>Upload public key, enable toggle</td></tr>
+            <tr><td>User identity in requests</td><td class="no">Anonymous</td><td class="yes">sub / name / custom claims</td></tr>
+            <tr><td>Audit trail</td><td class="no">None</td><td class="yes">Per-user in wxO logs</td></tr>
+            <tr><td>Rate-limiting</td><td class="na">Platform default (shared)</td><td class="yes">Per-user possible</td></tr>
+            <tr><td>OAuth / SSO compatibility</td><td class="no">Not applicable</td><td class="yes">Yes — pass SSO token as claim</td></tr>
+            <tr><td>Max token lifetime</td><td class="na">N/A</td><td>7100 seconds</td></tr>
+            <tr><td>Works on static hosts (S3, CDN)</td><td class="yes">Yes</td><td class="no">No — needs backend</td></tr>
+            <tr><td>Suitable for production</td><td class="no">Demo only</td><td class="yes">Yes</td></tr>
+            <tr><td>agent with enterprise connections</td><td class="no">Not recommended</td><td class="yes">Yes</td></tr>
+            <tr><td>Implementation complexity</td><td class="yes">Low</td><td>Medium</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         Unsecured guide
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="unsecured-guide">
+      <p class="section-label">Unsecured embed</p>
+      <h2 class="section-title" id="unsecured-prereq">Authentication flow</h2>
+
+      <div class="flow-container">
+        <div class="flow">
+          <div class="flow-step"><strong>Browser</strong><span>page load</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-blue"><strong>wxoLoader.js</strong><span>CDN fetch</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-blue"><strong>wxoLoader.init()</strong><span>reads config</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-green"><strong>anon ticket</strong><span>security OFF</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-green"><strong>Chat widget</strong><span>renders ✓</span></div>
+        </div>
+      </div>
+
+      <h3 id="unsecured-code" style="margin-top:24px">One-time tenant setup</h3>
+      <p>Log in at
+        <a href="https://eu-de.watson-orchestrate.cloud.ibm.com" target="_blank" rel="noopener">
+          eu-de.watson-orchestrate.cloud.ibm.com
+        </a>
+        → <strong>profile icon</strong> → <strong>Administration</strong>
+        → <strong>Settings</strong> → <strong>Embed Security</strong>
+        → toggle <strong>Security: OFF</strong> → confirm warning → Save.
+      </p>
+
+      <h3 style="margin-top:20px">Minimal embed code (10 lines)</h3>
+      <div style="background:#161616;border-radius:4px;overflow:hidden;margin:12px 0">
+        <div style="background:#262626;padding:8px 16px;font-size:11px;color:#8d8d8d;font-family:monospace">
+          HTML — paste near &lt;/body&gt;
+        </div>
+        <pre style="padding:18px;font-family:monospace;font-size:13px;color:#f4f4f4;overflow-x:auto;margin:0"><span style="color:#6f6f6f">&lt;!-- Container element --&gt;</span>
+<span style="color:#ff7eb6">&lt;div</span> <span style="color:#78a9ff">id</span>=<span style="color:#42be65">"wxo-chat-root"</span><span style="color:#ff7eb6">&gt;&lt;/div&gt;</span>
+
+<span style="color:#ff7eb6">&lt;script&gt;</span>
+window.wxOConfiguration = {
+  <span style="color:#78a9ff">orchestrationID</span>: <span style="color:#42be65">"YOUR_ORCHESTRATION_ID"</span>,
+  <span style="color:#78a9ff">hostURL</span>:         <span style="color:#42be65">"https://eu-de.watson-orchestrate.cloud.ibm.com"</span>,
+  <span style="color:#78a9ff">rootElementID</span>:   <span style="color:#42be65">"wxo-chat-root"</span>,
+  <span style="color:#78a9ff">showLauncher</span>:    <span style="color:#ff832b">true</span>,
+  <span style="color:#78a9ff">crn</span>:             <span style="color:#42be65">"YOUR_CRN"</span>,
+  <span style="color:#78a9ff">deploymentPlatform</span>: <span style="color:#42be65">"ibmcloud"</span>,
+  <span style="color:#78a9ff">chatOptions</span>: { <span style="color:#78a9ff">agentId</span>: <span style="color:#42be65">"YOUR_AGENT_ID"</span>, <span style="color:#78a9ff">agentEnvironmentId</span>: <span style="color:#42be65">"YOUR_ENV_ID"</span> }
+};
+<span style="color:#ee5396">setTimeout</span>(<span style="color:#ff7eb6">function</span>(){
+  <span style="color:#ff7eb6">const</span> s=document.<span style="color:#ee5396">createElement</span>(<span style="color:#42be65">"script"</span>);
+  s.src=window.wxOConfiguration.hostURL+<span style="color:#42be65">"/wxochat/wxoLoader.js?embed=true"</span>;
+  s.<span style="color:#ee5396">addEventListener</span>(<span style="color:#42be65">"load"</span>,()=&gt;wxoLoader.<span style="color:#ee5396">init</span>()); document.head.<span style="color:#ee5396">appendChild</span>(s);
+},0);
+<span style="color:#ff7eb6">&lt;/script&gt;</span></pre>
+      </div>
+
+      <a href="demo-unsecured.html" class="btn btn-green" style="margin-top:8px">
+        → Full unsecured demo with all variations
+      </a>
+    </section>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         Secured guide
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="secured-guide">
+      <p class="section-label">Secured embed (JWT)</p>
+      <h2 class="section-title">Architecture — RSA + JWT flow</h2>
+
+      <div class="flow-container">
+        <div class="flow">
+          <div class="flow-step"><strong>Browser</strong><span>page loads</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-purple"><strong>GET /api/token</strong><span>your backend</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-purple"><strong>JWT signed</strong><span>RS256 private key</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-blue"><strong>identityToken callback</strong><span>returns JWT</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-blue"><strong>wxO verifies</strong><span>with public key</span></div>
+          <div class="flow-arrow-col">→</div>
+          <div class="flow-step hl-green"><strong>Chat widget</strong><span>renders ✓</span></div>
+        </div>
+      </div>
+
+      <h3 id="rsa-keygen" style="margin-top:24px">Step 1 — Generate RSA key pair</h3>
+      <div style="background:#161616;border-radius:4px;overflow:hidden;margin:12px 0">
+        <pre style="padding:16px;font-family:monospace;font-size:13px;color:#f4f4f4;margin:0"><span style="color:#6f6f6f"># Generates keys/wxo_embed_private.pem + keys/wxo_embed_public.pem</span>
+bash scripts/generate_rsa_keys.sh
+
+<span style="color:#6f6f6f"># Add to .env</span>
+echo "EMBED_PRIVATE_KEY_FILE=keys/wxo_embed_private.pem" >> .env</pre>
+      </div>
+
+      <h3 id="upload-public-key" style="margin-top:20px">Step 2 — Upload public key to wxO tenant</h3>
+      <p>
+        <a href="https://eu-de.watson-orchestrate.cloud.ibm.com" target="_blank" rel="noopener">eu-de.watson-orchestrate.cloud.ibm.com</a>
+        → <strong>Administration</strong> → <strong>Settings</strong>
+        → <strong>Embed Security</strong> → toggle <strong>Security: ON</strong>
+        → paste <code>keys/wxo_embed_public.pem</code> → Save.
+      </p>
+
+      <h3 id="jwt-server" style="margin-top:20px">Step 3 — Start the JWT signing server</h3>
+      <div style="background:#161616;border-radius:4px;overflow:hidden;margin:12px 0">
+        <pre style="padding:16px;font-family:monospace;font-size:13px;color:#f4f4f4;margin:0">source venv/bin/activate
+python scripts/jwt_server.py    <span style="color:#6f6f6f"># listens on :3001</span></pre>
+      </div>
+
+      <h3 id="secured-code" style="margin-top:20px">Step 4 — identityToken callback in the embed</h3>
+      <div style="background:#161616;border-radius:4px;overflow:hidden;margin:12px 0">
+        <pre style="padding:16px;font-family:monospace;font-size:13px;color:#f4f4f4;margin:0"><span style="color:#6f6f6f">// The only difference from unsecured: add identityToken to chatOptions</span>
+window.wxOConfiguration = {
+  <span style="color:#6f6f6f">// ... same fields as unsecured ...</span>
+  <span style="color:#78a9ff">chatOptions</span>: {
+    <span style="color:#78a9ff">agentId</span>:            <span style="color:#42be65">"YOUR_AGENT_ID"</span>,
+    <span style="color:#78a9ff">agentEnvironmentId</span>: <span style="color:#42be65">"YOUR_ENV_ID"</span>,
+
+    <span style="color:#78a9ff">identityToken</span>: {
+      <span style="color:#ee5396">getToken</span>: <span style="color:#ff7eb6">async function</span>() {
+        <span style="color:#ff7eb6">const</span> res  = <span style="color:#ff7eb6">await</span> <span style="color:#ee5396">fetch</span>(<span style="color:#42be65">"http://localhost:3001/api/token"</span>);
+        <span style="color:#ff7eb6">const</span> data = <span style="color:#ff7eb6">await</span> res.<span style="color:#ee5396">json</span>();
+        <span style="color:#ff7eb6">return</span> data.token;   <span style="color:#6f6f6f">// raw JWT string</span>
+      }
+    }
+  }
+};</pre>
+      </div>
+
+      <a href="demo-secured.html" class="btn btn-purple" style="margin-top:8px">
+        → Full secured demo with live token inspector
+      </a>
+    </section>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         Network requests
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="network-requests">
+      <p class="section-label">Reference</p>
+      <h2 class="section-title">Network requests made by the widget</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Request</th><th>Method</th><th>Auth</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>/wxochat/wxoLoader.js?embed=true</code></td>
+              <td>GET</td><td class="na">None</td>
+              <td>Loader script from hostURL CDN — always HTTP 200</td>
+            </tr>
+            <tr>
+              <td><code>/instances/{id}/v1/auth/ticket</code></td>
+              <td>GET</td>
+              <td>JWT (secured) / anon (unsecured)</td>
+              <td>Session ticket from API backend — the failing call</td>
+            </tr>
+            <tr>
+              <td><code>/instances/{id}/v1/chat</code></td>
+              <td>POST</td>
+              <td>Session ticket</td>
+              <td>Streaming chat completions</td>
+            </tr>
+            <tr>
+              <td><code>http://localhost:3001/api/token</code></td>
+              <td>GET/POST</td>
+              <td>None (backend-internal)</td>
+              <td>JWT signing server — secured mode only</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         Error codes
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="error-codes">
+      <h2 class="section-title">Error code reference</h2>
+
+      <table class="error-table">
+        <thead><tr><th>Code</th><th>HTTP</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>WXO-PROXY-10080E</code></td><td>401</td>
+            <td>"kid is not found in the customer's token" — no public key registered</td>
+            <td>Upload public key to Embed Security tab, or disable security</td>
+          </tr>
+          <tr>
+            <td><code>WXO-PROXY-10055E</code></td><td>401</td>
+            <td>"Not authenticated" — missing Authorization header</td>
+            <td>Ensure identityToken.getToken returns a valid JWT string</td>
+          </tr>
+          <tr>
+            <td><code>WXO-PROXY-15008E</code></td><td>400</td>
+            <td>"IAM-API_KEY is missing" — wrong endpoint called</td>
+            <td>Check hostURL vs instanceUrl — use portal URL for hostURL</td>
+          </tr>
+          <tr>
+            <td>Authentication Error (UI)</td><td>—</td>
+            <td>Widget cannot complete auth ticket flow</td>
+            <td>Check browser DevTools Network tab for underlying HTTP error</td>
+          </tr>
+          <tr>
+            <td>Agent fetching failed (UI)</td><td>—</td>
+            <td>Auth succeeded but agent not in Live state</td>
+            <td>Run: <code>orchestrate agents deploy --name ibm_bob_assistant</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         CSP
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="csp">
+      <h2 class="section-title">Content Security Policy</h2>
+      <p>
+        The CSP differs between modes.  The secured mode adds
+        <code>http://localhost:3001</code> to <code>connect-src</code>
+        so the <code>identityToken</code> callback can reach the JWT server.
+      </p>
+
+      <div style="background:#161616;border-radius:4px;overflow:hidden;margin:12px 0">
+        <div style="background:#262626;padding:8px 16px;font-size:11px;color:#8d8d8d;font-family:monospace">
+          Unsecured — connect-src additions
+        </div>
+        <pre style="padding:14px;font-family:monospace;font-size:13px;color:#f4f4f4;margin:0">connect-src 'self'
+            https://eu-de.watson-orchestrate.cloud.ibm.com
+            https://api.eu-de.watson-orchestrate.cloud.ibm.com
+            https://*.eu-de.watson-orchestrate.cloud.ibm.com
+            wss://eu-de.watson-orchestrate.cloud.ibm.com;</pre>
+      </div>
+
+      <div style="background:#161616;border-radius:4px;overflow:hidden;margin:12px 0">
+        <div style="background:#262626;padding:8px 16px;font-size:11px;color:#8d8d8d;font-family:monospace">
+          Secured — adds JWT server origin
+        </div>
+        <pre style="padding:14px;font-family:monospace;font-size:13px;color:#f4f4f4;margin:0">connect-src 'self'
+            <span style="color:#d4bbff">http://localhost:3001</span>           <span style="color:#6f6f6f">← JWT signing server</span>
+            https://eu-de.watson-orchestrate.cloud.ibm.com
+            https://api.eu-de.watson-orchestrate.cloud.ibm.com
+            ...;</pre>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────────────────────────────
+         File reference
+    ─────────────────────────────────────────────────────────────────────── -->
+    <section id="files">
+      <h2 class="section-title">File reference</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>web/index.html</code></td><td>Main demo page with live unsecured chat widget</td></tr>
+            <tr><td><code>web/webchat-config.js</code></td><td>Generated config — do not edit manually</td></tr>
+            <tr><td><code>web/demo-unsecured.html</code></td><td>Unsecured embed full documentation + live demo</td></tr>
+            <tr><td><code>web/demo-secured.html</code></td><td>Secured (JWT) embed documentation + live token inspector</td></tr>
+            <tr><td><code>web/embed-docs.html</code></td><td>This page — documentation hub</td></tr>
+            <tr><td><code>scripts/generate_rsa_keys.sh</code></td><td>Generate RSA-2048 key pair for secured mode</td></tr>
+            <tr><td><code>scripts/jwt_server.py</code></td><td>JWT signing backend for secured mode (port 3001)</td></tr>
+            <tr><td><code>scripts/get_webchat_embed.sh</code></td><td>Regenerate webchat-config.js from live wxO platform</td></tr>
+            <tr><td><code>scripts/start.sh</code></td><td>Full deploy: KB + tools + agent + web server</td></tr>
+            <tr><td><code>keys/wxo_embed_private.pem</code></td><td>RSA private key — <strong>never commit</strong> — in .gitignore</td></tr>
+            <tr><td><code>keys/wxo_embed_public.pem</code></td><td>RSA public key — upload to wxO Embed Security settings</td></tr>
+            <tr><td><code>.env</code></td><td>Secrets: IBM_CLOUD_API_KEY, ORCHESTRATE_URL, EMBED_PRIVATE_KEY_FILE</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div><!-- /doc body -->
+</div><!-- /doc layout -->
+</div><!-- /content -->
+
+<!-- ── Footer ── -->
+<footer>
+  <span>IBM Bob Documentation Assistant — Embed Docs Hub</span>
+  <div style="display:flex;gap:16px">
+    <a href="demo-unsecured.html">Unsecured Demo</a>
+    <a href="demo-secured.html">Secured Demo</a>
+    <a href="index.html">Home</a>
+  </div>
+</footer>
+
+</body>
+</html>
