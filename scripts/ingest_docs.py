@@ -20,6 +20,7 @@ from typing import List
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.agents.ibm_doc_agent.chunker import TextChunker
+from src.agents.ibm_doc_agent.models import ScrapedDocument
 from src.agents.ibm_doc_agent.scraper import IBMDocScraper
 from src.agents.ibm_doc_agent.vector_store import VectorStore
 
@@ -30,25 +31,36 @@ logging.basicConfig(
 )
 logger = logging.getLogger("ingest_docs")
 
+# Official IBM Bob Documentation URLs (https://bob.ibm.com/docs)
 DEFAULT_URLS = [
-    "https://www.ibm.com/docs/en/watsonx/watsonx-orchestrate/current?topic=getting-started",
-    "https://www.ibm.com/docs/en/watsonx/watsonx-orchestrate/current?topic=building-agents",
-    "https://www.ibm.com/docs/en/watsonx/watsonx-ai/current?topic=foundation-models",
+    "https://bob.ibm.com/docs/overview",
+    "https://bob.ibm.com/docs/bob_shell",
+    "https://bob.ibm.com/docs/enterprise",
+    "https://bob.ibm.com/docs/premium_packages",
+    "https://bob.ibm.com/docs/skills",
+    "https://bob.ibm.com/docs/mcp",
+    "https://bob.ibm.com/docs/security",
+    "https://bob.ibm.com/docs/telemetry",
+    "https://bob.ibm.com/docs/modes",
+    "https://bob.ibm.com/docs/bobcoins",
+    "https://bob.ibm.com/docs/bobalytics",
 ]
 
 
 def run_ingestion(
-    urls: List[str],
+    urls: Optional[List[str]] = None,
+    local_docs_dir: Optional[str] = "knowledge-bases/docs",
     chunk_size: int = 500,
     chunk_overlap: int = 50,
     delay: float = 0.5,
     output_store: str = "knowledge-bases/ibm_doc_store.json",
     report_output: str = "output/ingestion_report.json",
 ) -> int:
-    """Execute scraping, chunking, and vector ingestion pipeline.
+    """Execute scraping, local text ingestion, chunking, and vector indexing pipeline.
 
     Args:
-        urls: Target URLs to scrape.
+        urls: Optional target URLs to scrape.
+        local_docs_dir: Local documentation directory (e.g. knowledge-bases/docs).
         chunk_size: Character size for chunking.
         chunk_overlap: Overlap characters between chunks.
         delay: Delay between requests in seconds.
@@ -59,7 +71,7 @@ def run_ingestion(
         0 on success, non-zero on failure.
     """
     start_time = datetime.datetime.now(datetime.timezone.utc)
-    logger.info("Starting documentation ingestion pipeline for %d URLs...", len(urls))
+    logger.info("Starting documentation ingestion pipeline...")
 
     scraper = IBMDocScraper(timeout=15, max_retries=3)
     chunker = TextChunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
@@ -69,19 +81,54 @@ def run_ingestion(
     scraped_docs = []
     errors = []
 
-    for url in urls:
-        logger.info("Processing documentation URL: %s", url)
-        try:
-            doc = scraper.scrape_url(url)
-            scraped_docs.append(doc)
-            chunks = chunker.process_document(doc)
-            added = store.add_chunks(chunks)
-            total_chunks += added
-            logger.info("Generated and indexed %d chunks for %s", added, url)
-        except Exception as exc:
-            error_msg = f"Failed processing {url}: {exc}"
-            logger.error(error_msg)
-            errors.append({"url": url, "error": str(exc)})
+    # 1. Ingest local documentation files if present
+    local_dir = Path(local_docs_dir) if local_docs_dir else None
+    if local_dir and local_dir.exists():
+        logger.info("Ingesting local documentation from %s...", local_dir)
+        for doc_file in sorted(local_dir.glob("*.txt")):
+            try:
+                content = doc_file.read_text(encoding="utf-8")
+                doc_title = doc_file.stem.replace("_", " ").title()
+                source_url = f"https://bob.ibm.com/docs/{doc_file.stem}"
+                
+                # Extract first heading if present
+                lines = [l.strip() for l in content.splitlines() if l.strip()]
+                if lines and lines[0].startswith("# "):
+                    doc_title = lines[0].replace("# ", "")
+
+                doc = ScrapedDocument(
+                    url=source_url,
+                    title=f"IBM Bob — {doc_title}",
+                    raw_html="",
+                    clean_text=content,
+                    sections=[{"header": doc_title, "content": content}],
+                    metadata={"source": "local_doc", "filename": doc_file.name},
+                )
+                scraped_docs.append(doc)
+                chunks = chunker.process_document(doc)
+                added = store.add_chunks(chunks)
+                total_chunks += added
+                logger.info("Indexed %d chunks from %s", added, doc_file.name)
+            except Exception as exc:
+                err = f"Failed processing {doc_file}: {exc}"
+                logger.error(err)
+                errors.append({"file": str(doc_file), "error": str(exc)})
+
+    # 2. Ingest remote URLs if provided
+    if urls:
+        for url in urls:
+            logger.info("Processing documentation URL: %s", url)
+            try:
+                doc = scraper.scrape_url(url)
+                scraped_docs.append(doc)
+                chunks = chunker.process_document(doc)
+                added = store.add_chunks(chunks)
+                total_chunks += added
+                logger.info("Generated and indexed %d chunks for %s", added, url)
+            except Exception as exc:
+                error_msg = f"Failed processing {url}: {exc}"
+                logger.error(error_msg)
+                errors.append({"url": url, "error": str(exc)})
 
     end_time = datetime.datetime.now(datetime.timezone.utc)
     duration_secs = (end_time - start_time).total_seconds()
@@ -123,8 +170,13 @@ def main() -> int:
     parser.add_argument(
         "--urls",
         nargs="+",
-        default=DEFAULT_URLS,
-        help="List of IBM documentation URLs to scrape and index.",
+        default=None,
+        help="List of external IBM documentation URLs to scrape and index.",
+    )
+    parser.add_argument(
+        "--local-dir",
+        default="knowledge-bases/docs",
+        help="Path to local documentation files (default: knowledge-bases/docs).",
     )
     parser.add_argument(
         "--chunk-size",
@@ -158,6 +210,7 @@ def main() -> int:
     args = parser.parse_args()
     return run_ingestion(
         urls=args.urls,
+        local_docs_dir=args.local_dir,
         chunk_size=args.chunk_size,
         chunk_overlap=args.chunk_overlap,
         delay=args.delay,

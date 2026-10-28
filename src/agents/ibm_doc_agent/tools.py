@@ -18,6 +18,12 @@ except ImportError:
     def tool(f):
         return f
 
+import sys
+
+_SRC_DIR = Path(__file__).resolve().parent.parent.parent.parent
+if str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
+
 from src.agents.ibm_doc_agent.vector_store import VectorStore
 
 logger = logging.getLogger("ibm_doc_tools")
