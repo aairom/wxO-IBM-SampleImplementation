@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IBM Bob Documentation Assistant — Project & Task Documentation</title>
+  <style>
+    :root {
+      --cds-background: #ffffff;
+      --cds-layer-01: #f4f4f4;
+      --cds-layer-02: #e0e0e0;
+      --cds-layer-03: #c6c6c6;
+      --cds-text-primary: #161616;
+      --cds-text-secondary: #525252;
+      --cds-text-helper: #6f6f6f;
+      --cds-brand: #0f62fe;
+      --cds-brand-hover: #0353e9;
+      --cds-code-bg: #161616;
+      --cds-code-text: #f4f4f4;
+      --cds-border: #e0e0e0;
+      --cds-border-strong: #8d8d8d;
+      --cds-support-success: #24a148;
+      --cds-support-info: #0043ce;
+      --cds-support-warning: #f1c21b;
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+      --font-mono: 'IBM Plex Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--cds-background);
+      color: var(--cds-text-primary);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Sidebar Navigation */
+    #sidebar {
+      width: 320px;
+      min-width: 320px;
+      background: var(--cds-layer-01);
+      border-right: 1px solid var(--cds-border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.75rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .sidebar-header {
+      border-bottom: 1px solid var(--cds-border);
+      padding-bottom: 1rem;
+    }
+
+    .brand-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--cds-brand);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 0.75rem;
+      color: var(--cds-text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .nav-search {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--cds-border-strong);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .nav-search:focus {
+      border-color: var(--cds-brand);
+      box-shadow: 0 0 0 1px var(--cds-brand);
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .nav-group-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--cds-text-helper);
+      margin-top: 0.8rem;
+      margin-bottom: 0.2rem;
+      padding-left: 0.5rem;
+    }
+
+    .nav-links a {
+      color: var(--cds-text-secondary);
+      text-decoration: none;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.825rem;
+      display: block;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-links a:hover {
+      background: var(--cds-layer-02);
+      color: var(--cds-text-primary);
+    }
+
+    .nav-links a.active {
+      background: var(--cds-layer-02);
+      color: var(--cds-brand);
+      font-weight: 600;
+      border-left: 3px solid var(--cds-brand);
+    }
+
+    /* Main Content Area */
+    #main-content {
+      flex: 1;
+      padding: 3rem 4rem;
+      max-width: 1100px;
+      overflow-y: auto;
+    }
+
+    header.doc-header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--cds-border);
+      padding-bottom: 1.5rem;
+    }
+
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 2px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-blue { background: #edf5ff; color: #0043ce; border: 1px solid #d0e2ff; }
+    .badge-green { background: #defbe6; color: #0e6027; border: 1px solid #a7f0ba; }
+    .badge-gray { background: #f4f4f4; color: #393939; border: 1px solid #e0e0e0; }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 600;
+      line-height: 1.2;
+      color: #000000;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--cds-border);
+      color: #161616;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 1.75rem;
+      margin-bottom: 0.75rem;
+      color: #161616;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--cds-text-primary);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      border: 1px solid var(--cds-border);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--cds-layer-01);
+      font-weight: 600;
+      color: #161616;
+    }
+
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    /* Code Blocks */
+    pre {
+      background: var(--cds-code-bg);
+      color: var(--cds-code-text);
+      padding: 1.25rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin: 1.25rem 0;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--cds-layer-01);
+      padding: 0.15rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.875em;
+      color: #da1e28;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: #f4f4f4;
+    }
+
+    .callout {
+      border-left: 4px solid var(--cds-brand);
+      background: #edf5ff;
+      padding: 1rem 1.25rem;
+      border-radius: 0 4px 4px 0;
+      margin: 1.5rem 0;
+    }
+
+    .callout-title {
+      font-weight: 600;
+      color: #0043ce;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    ul, ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+    }
+
+    footer {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--cds-border);
+      font-size: 0.8rem;
+      color: var(--cds-text-helper);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Table of Contents -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">IBM watsonx Orchestrate</div>
+      <div class="sidebar-subtitle">Project & Task Technical Documentation</div>
+    </div>
+    
+    <input type="text" class="nav-search" id="tocFilter" placeholder="Search documentation..." oninput="filterNav()">
+    
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#overview" class="active">1. Overview of Tasks</a></li>
+      <li><a href="#architecture">2. Architecture & Flow</a></li>
+      <li><a href="#prerequisites">3. Prerequisites & Setup</a></li>
+      
+      <div class="nav-group-title">Implementation Tasks</div>
+      <li><a href="#task-1">Task 1: Agent & KB</a></li>
+      <li><a href="#task-2">Task 2: Dynamic Live Tools</a></li>
+      <li><a href="#task-3">Task 3: Automated Importers</a></li>
+      <li><a href="#task-4">Task 4: Cryptography & JWT</a></li>
+      <li><a href="#task-5">Task 5: Web Chat Embeds</a></li>
+      <li><a href="#task-6">Task 6: Automation Scripts</a></li>
+      <li><a href="#task-7">Task 7: Test Suite</a></li>
+      <li><a href="#task-8">Task 8: Slide Deck & Hubs</a></li>
+      
+      <div class="nav-group-title">Operations & Reference</div>
+      <li><a href="#configuration">5. Configuration & Env</a></li>
+      <li><a href="#operations">6. Usage Instructions</a></li>
+      <li><a href="#security">7. Security Guidelines</a></li>
+      <li><a href="#artifacts">8. Artifact Index</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Documentation Content -->
+  <main id="main-content">
+    <header class="doc-header">
+      <div class="badges">
+        <span class="badge badge-blue">Production Ready</span>
+        <span class="badge badge-green">RS256 Verified</span>
+        <span class="badge badge-gray">Version 1.0.0</span>
+      </div>
+      <h1>IBM Bob Documentation Assistant</h1>
+      <p style="font-size: 1.1rem; color: var(--cds-text-secondary); margin-top: 0.25rem;">
+        Comprehensive architecture, task implementation, operations manual, and reusable integration asset.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <section id="overview">
+      <h2>1. Executive Summary & Completed Tasks Overview</h2>
+      <p>
+        This repository provides a complete, production-ready implementation of the <strong>IBM Bob Documentation Assistant</strong> on the <strong>IBM watsonx Orchestrate (wxO)</strong> platform. The system leverages Retrieval-Augmented Generation (RAG) over indexed domain documentation, dynamic custom search tools, an RS256 token-signing backend, and modular embed clients.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Task / Module</th>
+            <th>Purpose & Functionality</th>
+            <th>Deliverables</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Agent & KB</strong></td>
+            <td>Declarative native agent with 11 indexed technical documentation files.</td>
+            <td><code>agents/ibm_bob_assistant.agent.yaml</code>, <code>knowledge-bases/ibm_bob_docs.kb.yaml</code></td>
+          </tr>
+          <tr>
+            <td><strong>Live Search Tools</strong></td>
+            <td>Python <code>@tool</code> extensions for keyword & semantic document lookups.</td>
+            <td><code>tools/live_bob_search.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Import Automation</strong></td>
+            <td>CLI importers with schema validation and timestamped audit logs.</td>
+            <td><code>scripts/import_tools.py</code>, <code>scripts/import_agent.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Auth & Keypair</strong></td>
+            <td>RSA-2048 key generation & lightweight Python JWT signing service.</td>
+            <td><code>scripts/generate_rsa_keys.sh</code>, <code>scripts/jwt_server.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Web Chat Embeds</strong></td>
+            <td>Unsecured public and secured (identity-verified) embed clients.</td>
+            <td><code>web/demo-unsecured.html</code>, <code>web/demo-secured.html</code>, <code>web/webchat-config.js</code></td>
+          </tr>
+          <tr>
+            <td><strong>Lifecycle Automation</strong></td>
+            <td>Idempotent startup, graceful stop, and workspace cleanup scripts.</td>
+            <td><code>scripts/start.sh</code>, <code>scripts/stop.sh</code>, <code>scripts/serve.sh</code>, <code>scripts/cleanup.sh</code></td>
+          </tr>
+          <tr>
+            <td><strong>Testing & QA</strong></td>
+            <td>Automated pytest test suite with 140+ unit test validations.</td>
+            <td><code>tests/test_live_bob_search.py</code>, <code>tests/test_import_tools.py</code>, <code>tests/test_import_agent.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Presentations & Hubs</strong></td>
+            <td>20-slide IBM Carbon presentation deck and developer documentation portal.</td>
+            <td><code>web/deck/index.html</code>, <code>web/embed-docs.html</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="architecture">
+      <h2>2. Architecture & System Flow</h2>
+      <p>
+        The system separates concerns across client embedding, local backend services, and the cloud-based watsonx Orchestrate runtime:
+      </p>
+
+      <pre><code>+-----------------------------------------------------------------------------------+
+|                              FRONTEND CLIENT TIER                                 |
+|  [ web/demo-unsecured.html ]            [ web/demo-secured.html ]                 |
+|  (Anonymous WebChat Embed)              (RS256 Identity Token Handshake)          |
++-----------------------------------------------------------------------------------+
+           |                                         |
+           | Direct Embed                            | 1. Request Identity Token
+           |                                         v
+           |                        +----------------------------------+
+           |                        |    JWT AUTH SERVER (:3001)       |
+           |                        |    scripts/jwt_server.py         |
+           |                        |    - Signs token via RSA PrivKey |
+           |                        +----------------------------------+
+           |                                         | 2. Returns Signed JWT
+           |                                         v
++-----------------------------------------------------------------------------------+
+|                    IBM watsonx ORCHESTRATE CLOUD RUNTIME                          |
+|                                                                                   |
+|  [ WebChat Engine ] <====== 3. Pass Token (Verifies with Uploaded Public Key)    |
+|         |                                                                         |
+|         v                                                                         |
+|  [ ibm_bob_assistant Native Agent ]                                               |
+|         |                                                                         |
+|         +---> [ Knowledge Base: ibm_bob_docs (11 source documents) ]             |
+|         |                                                                         |
+|         +---> [ Custom Python Tools: live_bob_search.py ]                         |
++-----------------------------------------------------------------------------------+</code></pre>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="prerequisites">
+      <h2>3. Prerequisites & Setup</h2>
+      <p>Ensure the following software and dependencies are installed before executing operations:</p>
+      <ul>
+        <li><strong>Python</strong>: Version <code>3.10+</code> (managed with <code>uv</code> or standard virtualenv)</li>
+        <li><strong>OpenSSL</strong>: Command line utility for RSA keypair generation</li>
+        <li><strong>IBM Cloud credentials</strong>: watsonx Orchestrate instance with <code>integrationID</code>, <code>region</code>, and <code>serviceInstanceID</code></li>
+      </ul>
+
+      <pre><code># Install Python dependencies using uv (recommended)
+uv venv .venv
+source .venv/bin/activate
+uv pip install -r requirements.txt</code></pre>
+    </section>
+
+    <!-- Implementation Tasks -->
+    <section id="task-1">
+      <h2>Task 1: Agent & Knowledge Base Architecture</h2>
+      <p>
+        Configured a native, declarative agent definition in <code>agents/ibm_bob_assistant.agent.yaml</code> connected to an indexed Knowledge Base in <code>knowledge-bases/ibm_bob_docs.kb.yaml</code>.
+      </p>
+      <ul>
+        <li><strong>11 Knowledge Base Documents</strong>: Granular domain files covering Bob Shell, MCP integration, security guidelines, telemetry, mode switching, skills, packages, and troubleshooting.</li>
+        <li><strong>Citation Directives</strong>: System prompts mandate specific clickable markdown citations for all grounded responses.</li>
+      </ul>
+    </section>
+
+    <section id="task-2">
+      <h2>Task 2: Dynamic Live Tool Integration</h2>
+      <p>
+        Authored high-precision custom tools using the <code>@tool</code> decorator in <code>tools/live_bob_search.py</code>:
+      </p>
+      <ul>
+        <li><code>search_bob_documentation(query, limit)</code>: Performs ranked keyword and phrase search against the documentation catalog.</li>
+        <li><code>get_bob_doc_section(document_id, section_title)</code>: Extracts targeted markdown headers, text blocks, and code examples.</li>
+      </ul>
+    </section>
+
+    <section id="task-3">
+      <h2>Task 3: Automated Importers with Reporting</h2>
+      <p>
+        Developed robust automation scripts for registering tools and agent definitions to watsonx Orchestrate:
+      </p>
+      <ul>
+        <li><code>scripts/import_tools.py</code>: Validates tool signatures, registers them with wxO, and outputs execution logs.</li>
+        <li><code>scripts/import_agent.py</code>: Validates YAML definitions, links dependent tools and KBs, and saves timestamped JSON audit reports to <code>output/</code>.</li>
+      </ul>
+    </section>
+
+    <section id="task-4">
+      <h2>Task 4: Cryptography & JWT Token Server</h2>
+      <p>
+        Built an end-to-end asymmetric cryptographic identity infrastructure:
+      </p>
+      <ul>
+        <li><code>scripts/generate_rsa_keys.sh</code>: Generates 2048-bit PKCS#8 private key and public key PEM files into <code>keys/</code>.</li>
+        <li><code>scripts/jwt_server.py</code>: Standalone Python HTTP server providing CORS-enabled <code>/token</code>, <code>/public-key</code>, and <code>/health</code> endpoints.</li>
+      </ul>
+    </section>
+
+    <section id="task-5">
+      <h2>Task 5: Web Chat Client Embeds</h2>
+      <p>
+        Created production-ready web chat integration templates:
+      </p>
+      <ul>
+        <li><strong>Unsecured Client (<code>web/demo-unsecured.html</code>)</strong>: Public-facing embed for unauthenticated scenarios with live code tabs.</li>
+        <li><strong>Secured Client (<code>web/demo-secured.html</code>)</strong>: Enterprise-ready client with automated token acquisition via <code>watsonxOrchestrate:requestIdentityToken</code>, token renewal, and a live JWT debugger.</li>
+      </ul>
+    </section>
+
+    <section id="task-6">
+      <h2>Task 6: Lifecycle Automation Scripts</h2>
+      <p>
+        Standardized operational shell scripts adhering strictly to project guidelines:
+      </p>
+      <ul>
+        <li><code>scripts/start.sh</code>: Idempotent 9-step deployment pipeline.</li>
+        <li><code>scripts/stop.sh</code>: Graceful shutdown of servers and process cleanup.</li>
+        <li><code>scripts/serve.sh</code>: CLI switcher for hosting web apps or slide decks.</li>
+        <li><code>scripts/cleanup.sh</code>: Removes virtual environments, caches, and temporary files.</li>
+      </ul>
+    </section>
+
+    <section id="task-7">
+      <h2>Task 7: Test Suite & Verification</h2>
+      <p>
+        Authored comprehensive automated test suites covering tool logic, importer scripts, and embed generators:
+      </p>
+      <pre><code>pytest tests/ -v</code></pre>
+      <ul>
+        <li><code>tests/test_live_bob_search.py</code>: 31 unit tests validating search accuracy and section parsing.</li>
+        <li><code>tests/test_import_tools.py</code>: 56 unit tests validating tool parsing and error resilience.</li>
+        <li><code>tests/test_import_agent.py</code>: 54 unit tests validating schema checks and API mocks.</li>
+      </ul>
+    </section>
+
+    <section id="task-8">
+      <h2>Task 8: Presentation Deck & Documentation Hub</h2>
+      <p>
+        Built an interactive HTML5 presentation deck (<code>web/deck/index.html</code>) featuring 20 modular slides designed with IBM Carbon Design tokens, keyboard navigation, and responsive typography.
+      </p>
+    </section>
+
+    <!-- Configuration -->
+    <section id="configuration">
+      <h2>5. Configuration Reference</h2>
+      <p>Configure environment variables in <code>.env</code> using <code>.env.example</code> as a template:</p>
+      <pre><code># Local Service Ports
+JWT_PORT=3001
+WEB_PORT=8000
+HOST=127.0.0.1
+
+# watsonx Orchestrate Parameters
+WXO_INTEGRATION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+WXO_REGION=us-south
+WXO_SERVICE_INSTANCE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+WXO_AGENT_ID=ibm_bob_assistant
+
+# Cryptographic Keys & JWT
+PRIVATE_KEY_PATH=keys/wxo_embed_private.pem
+PUBLIC_KEY_PATH=keys/wxo_embed_public.pem
+JWT_EXPIRATION_MINUTES=60
+JWT_ISSUER=wxo-embed-service</code></pre>
+    </section>
+
+    <!-- Operations -->
+    <section id="operations">
+      <h2>6. Operational Instructions</h2>
+      <pre><code># 1. Start entire stack in background
+./scripts/start.sh
+
+# 2. Access applications
+# - Main Portal:    http://localhost:8000/
+# - Secured Demo:   http://localhost:8000/demo-secured.html
+# - Unsecured Demo: http://localhost:8000/demo-unsecured.html
+# - Slide Deck:     http://localhost:8000/deck/index.html
+
+# 3. Stop background services
+./scripts/stop.sh</code></pre>
+    </section>
+
+    <!-- Security -->
+    <section id="security">
+      <h2>7. Security Guidelines</h2>
+      <div class="callout">
+        <div class="callout-title">Security Best Practices</div>
+        <p>1. Never expose private RSA keys to client-side code or public repositories.</p>
+        <p>2. Keep token lifetimes short (15–60 minutes) and handle refresh events automatically.</p>
+        <p>3. Always sign with RS256 to ensure asymmetric verification by watsonx Orchestrate.</p>
+      </div>
+    </section>
+
+    <!-- Artifacts -->
+    <section id="artifacts">
+      <h2>8. Artifact Index</h2>
+      <ul>
+        <li>Documentation: <code>Docs/Quickstart.md</code>, <code>Docs/Deployment.md</code>, <code>Docs/WebChat_Integration_Guide.md</code>, <code>Docs/IMPORT_AGENT_GUIDE.md</code></li>
+        <li>Agent Config: <code>agents/ibm_bob_assistant.agent.yaml</code></li>
+        <li>Knowledge Base: <code>knowledge-bases/ibm_bob_docs.kb.yaml</code></li>
+        <li>Python Tools: <code>tools/live_bob_search.py</code></li>
+        <li>Automation: <code>scripts/start.sh</code>, <code>scripts/stop.sh</code>, <code>scripts/jwt_server.py</code>, <code>scripts/generate_rsa_keys.sh</code></li>
+      </ul>
+    </section>
+
+    <footer>
+      IBM Bob Documentation Assistant &copy; 2026. Made with IBM Bob.
+    </footer>
+  </main>
+
+  <script>
+    function filterNav() {
+      const q = document.getElementById('tocFilter').value.toLowerCase();
+      const links = document.querySelectorAll('#navLinks li');
+      links.forEach(li => {
+        const text = li.textContent.toLowerCase();
+        li.style.display = text.includes(q) ? 'block' : 'none';
+      });
+    }
+
+    // Highlight active link on scroll
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section');
+      const navLinks = document.querySelectorAll('#navLinks a');
+      let currentSection = '';
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 120;
+        if (window.scrollY >= sectionTop) {
+          currentSection = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSection}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
