@@ -1,0 +1,48 @@
+name: Sync & Deploy IBM Bob Knowledge Base
+
+on:
+  schedule:
+    # Run daily at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Allow manual triggering from GitHub Actions UI
+
+jobs:
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Configure watsonx Orchestrate Environment
+        env:
+          ORCHESTRATE_URL: ${{ secrets.ORCHESTRATE_URL }}
+          IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+          ORCHESTRATE_ENV_NAME: "wxo-ci"
+        run: |
+          orchestrate env add -n "$ORCHESTRATE_ENV_NAME" -u "$ORCHESTRATE_URL"
+          orchestrate env activate "$ORCHESTRATE_ENV_NAME" --api-key "$IBM_CLOUD_API_KEY"
+
+      - name: Sync Docs, Rebuild Vector Store & Deploy to wxO
+        env:
+          BOB_SEARCH_API_URL: ${{ secrets.BOB_SEARCH_API_URL }}
+          BOB_SEARCH_API_TOKEN: ${{ secrets.BOB_SEARCH_API_TOKEN }}
+        run: |
+          python scripts/sync_and_deploy_docs.py
+
+      - name: Upload Deployment Audit Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sync-and-deploy-report
+          path: output/sync_and_deploy_report.json

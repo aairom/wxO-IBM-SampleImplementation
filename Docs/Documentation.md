@@ -1,334 +1,292 @@
-# Project Documentation & Task Reference Asset
-**Project:** IBM Bob Documentation Assistant & watsonx Orchestrate Integration  
-**Version:** 1.0.0  
-**Target Platform:** IBM watsonx Orchestrate (ADK / Native Agent Runtime) & Web Chat Embed  
+# Project Completion & Master Technical Documentation
 
 ---
 
-## Table of Contents
-1. [Executive Summary & Completed Tasks Overview](#1-executive-summary--completed-tasks-overview)
-2. [Architecture & System Flow](#2-architecture--system-flow)
-3. [Prerequisites & Dependencies](#3-prerequisites--dependencies)
-4. [Task Breakdown & Implementation Details](#4-task-breakdown--implementation-details)
-   - [Task 1: Agent & Knowledge Base Architecture](#task-1-agent--knowledge-base-architecture)
-   - [Task 2: Dynamic Live Tool Integration](#task-2-dynamic-live-tool-integration)
-   - [Task 3: Automated Tool & Agent Importers with Reporting](#task-3-automated-tool--agent-importers-with-reporting)
-   - [Task 4: Cryptographic Key Management & RS256 JWT Server](#task-4-cryptographic-key-management--rs256-jwt-server)
-   - [Task 5: Web Chat Client Implementations (Unsecured & Secured)](#task-5-web-chat-client-implementations-unsecured--secured)
-   - [Task 6: Lifecycle Automation & Management Scripts](#task-6-lifecycle-automation--management-scripts)
-   - [Task 7: Test Suite & Quality Assurance Verification](#task-7-test-suite--quality-assurance-verification)
-   - [Task 8: Interactive HTML5 Slide Deck & Documentation Portals](#task-8-interactive-html5-slide-deck--documentation-portals)
-   - [Task 9: Live Documentation Scraper & Ingestion Pipeline Agent](#task-9-live-documentation-scraper--ingestion-pipeline-agent)
-5. [Configuration & Environment Reference](#5-configuration--environment-reference)
-6. [Operational Runbooks & Usage Instructions](#6-operational-runbooks--usage-instructions)
-7. [Security Guidelines & Best Practices](#7-security-guidelines--best-practices)
-8. [Cross-Reference & Artifact Index](#8-cross-reference--artifact-index)
+## 1. Executive Summary & Project Scope
+
+This project delivers a production-ready, dual-agent architecture on **IBM watsonx Orchestrate (wxO)** deployed in instance **`aam-wxo-be`** (`https://api.eu-de.watson-orchestrate.cloud.ibm.com/instances/75c2cabb-2b02-4d65-8127-a9cc65d1ee46`).
+
+The system bridges enterprise knowledge management with conversational AI, offering both a native watsonx Orchestrate agent (`ibm_bob_assistant`) and an autonomous, Python-powered live documentation agent (`ibm_doc_assistant`) backed by a custom scraping, semantic chunking, and vector indexing engine.
 
 ---
 
-## 1. Executive Summary & Completed Tasks Overview
+## 2. Table of Contents
 
-This project delivers a complete enterprise-grade implementation of the **IBM Bob Documentation Assistant** powered by **IBM watsonx Orchestrate (wxO)**. The solution combines a native RAG (Retrieval-Augmented Generation) agent grounded in IBM Bob documentation with dynamic live search tools, automated deployment pipelines, an RS256-secured JWT authentication server, and an embeddable web chat frontend.
-
-### Summary of Completed Milestones
-
-| Milestone / Area | Description | Key Deliverables |
-| :--- | :--- | :--- |
-| **Agent Definition & KB** | Declarative agent definition and indexed Knowledge Base with 11 domain documentation files. | [`agents/ibm_bob_assistant.agent.yaml`](agents/ibm_bob_assistant.agent.yaml), [`knowledge-bases/ibm_bob_docs.kb.yaml`](knowledge-bases/ibm_bob_docs.kb.yaml) |
-| **Custom Tooling** | Live doc querying and section retrieval tools utilizing Python `@tool` decorators. | [`tools/live_bob_search.py`](tools/live_bob_search.py) |
-| **Import Automation** | Automated CLI tools for tool/agent import with full schema validation and timestamped JSON reporting. | [`scripts/import_tools.py`](scripts/import_tools.py), [`scripts/import_agent.py`](scripts/import_agent.py) |
-| **Security & Auth Backend** | RSA-2048 keypair generation and lightweight Python JWT token signing service (RS256). | [`scripts/generate_rsa_keys.sh`](scripts/generate_rsa_keys.sh), [`scripts/jwt_server.py`](scripts/jwt_server.py) |
-| **Web Chat Integration** | Web client interfaces for both anonymous (unsecured) and cryptographically secured chat sessions. | [`web/demo-unsecured.html`](web/demo-unsecured.html), [`web/demo-secured.html`](web/demo-secured.html), [`web/webchat-config.js`](web/webchat-config.js) |
-| **Lifecycle & Operations** | 9-step idempotent pipeline startup, graceful shutdown, and project cleanup scripts. | [`scripts/start.sh`](scripts/start.sh), [`scripts/stop.sh`](scripts/stop.sh), [`scripts/serve.sh`](scripts/serve.sh), [`scripts/cleanup.sh`](scripts/cleanup.sh) |
-| **Automated Testing** | Comprehensive unit test suite covering tool logic, importer scripts, and embed generators (140+ unit tests). | [`tests/test_live_bob_search.py`](tests/test_live_bob_search.py), [`tests/test_import_tools.py`](tests/test_import_tools.py), [`tests/test_import_agent.py`](tests/test_import_agent.py) |
-| **Presentations & Docs** | 20-slide IBM Carbon-styled HTML presentation deck and interactive embed documentation hubs. | [`web/deck/index.html`](web/deck/index.html), [`web/embed-docs.html`](web/embed-docs.html), [`Docs/`](Docs/) |
-| **IBM Doc Agent & Pipeline** | Live web scraping, chunking, vector indexing, and automated wxO agent deployment pipeline. | [`src/agents/ibm_doc_agent/`](src/agents/ibm_doc_agent/), [`scripts/ingest_docs.py`](scripts/ingest_docs.py), [`scripts/deploy_orchestrate_agent.py`](scripts/deploy_orchestrate_agent.py) |
+- [1. Executive Summary & Project Scope](#1-executive-summary--project-scope)
+- [2. Table of Contents](#2-table-of-contents)
+- [3. Summary of Completed Tasks](#3-summary-of-completed-tasks)
+- [4. Architectural Blueprint & Data Flow](#4-architectural-blueprint--data-flow)
+- [5. Component Descriptions & Implementation Details](#5-component-descriptions--implementation-details)
+  - [5.1 The `ibm_doc_agent` Package](#51-the-ibm_doc_agent-package)
+  - [5.2 Semantic Chunking & Vector Engine](#52-semantic-chunking--vector-engine)
+  - [5.3 watsonx Orchestrate Agent & Tool Deployment](#53-watsonx-orchestrate-agent--tool-deployment)
+  - [5.4 Enterprise Security & JWT Token Exchange](#54-enterprise-security--jwt-token-exchange)
+  - [5.5 Continuous Synchronization & CI/CD Pipeline](#55-continuous-synchronization--cicd-pipeline)
+- [6. Prerequisites & Environment Setup](#6-prerequisites--environment-setup)
+- [7. Comprehensive Usage Instructions](#7-comprehensive-usage-instructions)
+  - [7.1 Using the Master Automation Script (`automate.sh`)](#71-using-the-master-automation-script-automatesh)
+  - [7.2 Running the Interactive Terminal CLI Agent](#72-running-the-interactive-terminal-cli-agent)
+  - [7.3 Running the Local Web Chat Application](#73-running-the-local-web-chat-application)
+- [8. Configuration Details & Environment Variables](#8-configuration-details--environment-variables)
+- [9. Testing, Validation & Verification Results](#9-testing-validation--verification-results)
+- [10. Technical Assets & Cross-References](#10-technical-assets--cross-references)
 
 ---
 
-## 2. Architecture & System Flow
+## 3. Summary of Completed Tasks
 
-### System Component Diagram
+| Task # | Task Title | Primary Deliverables | Status |
+|:---|:---|:---|:---:|
+| **Task 1** | **Repository Environment & Dependency Setup** | [`requirements.txt`](../requirements.txt), [`workspace_config.yaml`](../workspace_config.yaml), Virtual Environment | **Completed** |
+| **Task 2** | **Native wxO Agent Setup (`ibm_bob_assistant`)** | [`agents/ibm_bob_assistant.agent.yaml`](../agents/ibm_bob_assistant.agent.yaml), [`knowledge-bases/docs/`](../knowledge-bases/docs/) | **Completed** |
+| **Task 3** | **Live Doc Scraper & Semantic Ingestion Pipeline** | [`src/agents/ibm_doc_agent/scraper.py`](../src/agents/ibm_doc_agent/scraper.py), [`src/agents/ibm_doc_agent/chunker.py`](../src/agents/ibm_doc_agent/chunker.py), [`scripts/ingest_docs.py`](../scripts/ingest_docs.py) | **Completed** |
+| **Task 4** | **TF-IDF Vector Store & Knowledge Base** | [`src/agents/ibm_doc_agent/vector_store.py`](../src/agents/ibm_doc_agent/vector_store.py), [`knowledge-bases/ibm_doc_store.json`](../knowledge-bases/ibm_doc_store.json) (83 chunks) | **Completed** |
+| **Task 5** | **wxO Custom Python Tools Implementation** | [`src/agents/ibm_doc_agent/tools.py`](../src/agents/ibm_doc_agent/tools.py), [`src/agents/ibm_doc_agent/openapi_spec.json`](../src/agents/ibm_doc_agent/openapi_spec.json) | **Completed** |
+| **Task 6** | **Cloud Deployment Automation** | [`scripts/deploy_orchestrate_agent.py`](../scripts/deploy_orchestrate_agent.py), Agent ID `273c6294-...` | **Completed** |
+| **Task 7** | **Interactive Terminal CLI Agent** | [`src/agents/ibm_doc_agent/agent.py`](../src/agents/ibm_doc_agent/agent.py) | **Completed** |
+| **Task 8** | **JWT Security & Local Web Chat UI** | [`scripts/jwt_server.py`](../scripts/jwt_server.py), [`keys/`](../keys/), [`web/index.html`](../web/index.html), [`scripts/start.sh`](../scripts/start.sh) | **Completed** |
+| **Task 9** | **Continuous Sync Pipeline & CI/CD** | [`scripts/sync_and_deploy_docs.py`](../scripts/sync_and_deploy_docs.py), [`.github/workflows/sync_docs_deploy.yml`](../.github/workflows/sync_docs_deploy.yml) | **Completed** |
+| **Task 10** | **Master Automation CLI & Complete Documentation** | [`scripts/automate.sh`](../scripts/automate.sh), [`Docs/ARCHITECTURE.md`](ARCHITECTURE.md), [`Docs/KNOWLEDGE_BASE_REFRESH.md`](KNOWLEDGE_BASE_REFRESH.md), [`Docs/WATSONX_ORCHESTRATE_DEPLOYMENT.md`](WATSONX_ORCHESTRATE_DEPLOYMENT.md), [`Docs/Documentation.md`](Documentation.md), [`Docs/Documentation.html`](Documentation.html) | **Completed** |
+
+---
+
+## 4. Architectural Blueprint & Data Flow
 
 ```mermaid
-flowchart TD
-    subgraph Client["Frontend Client Tier"]
-        U([End User]) -->|Interacts| UI[Web Browser Interface]
-        UI -->|Anonymous Chat| DU[web/demo-unsecured.html]
-        UI -->|Secured Chat| DS[web/demo-secured.html]
-        UI -->|Slide Deck| DK[web/deck/index.html]
+flowchart TB
+    subgraph ClientLayer["Client & Integration Layer"]
+        WebChat["IBM Web Chat UI<br/>(localhost:8000)"]
+        JWT["JWT Security Proxy<br/>(localhost:3000)"]
+        CLI["Terminal CLI Agent<br/>(src.agents.ibm_doc_agent.agent)"]
+        Automation["Automation CLI<br/>(scripts/automate.sh)"]
     end
 
-    subgraph Backend["Local Services Tier"]
-        JS[scripts/jwt_server.py\nRS256 Signing Server\n:3001]
-        KS[(keys/\nRSA Private/Public Keys)]
-        KS -.->|Loads Private Key| JS
-        DS -->|GET /token| JS
+    subgraph WxOCloud["IBM watsonx Orchestrate Cloud Instance (aam-wxo-be)"]
+        subgraph AgentBob["ibm_bob_assistant (ID: 5c3c69c8-...)"]
+            BobKB["Native KB Search<br/>(bob.ibm.com/docs)"]
+        end
+
+        subgraph AgentDoc["ibm_doc_assistant (ID: 273c6294-...)"]
+            CloudTool1["search_ibm_live_docs"]
+            CloudTool2["get_ibm_doc_by_url"]
+        end
     end
 
-    subgraph WxO["IBM watsonx Orchestrate Cloud Runtime"]
-        WC[wxO WebChat Engine]
-        AG[ibm_bob_assistant\nNative Agent]
-        KB[(ibm_bob_docs\nKnowledge Base\n11 Docs)]
-        TL[Python Custom Tools\nsearch_bob_documentation\nget_bob_doc_section]
-        
-        DU -->|Direct Embed| WC
-        DS -->|identityToken| WC
-        WC -->|Agent Session| AG
-        AG -->|Vector Search| KB
-        AG -->|Tool Execution| TL
+    subgraph DataPipeline["Data Ingestion & Vector Knowledge Pipeline"]
+        SourceScraper["Scraper Engine<br/>(scraper.py & fetch_ibm_bob_docs.py)"]
+        LocalFiles["Local Doc Sources<br/>(knowledge-bases/docs/*.txt)"]
+        Chunker["Semantic Chunker<br/>(chunker.py - 500w, 50w overlap)"]
+        VectorStore["TF-IDF Vector Store<br/>(vector_store.py)"]
+        DiskStore[("Local Store JSON<br/>ibm_doc_store.json (83 chunks)")]
+        EmbeddedFallback[("Cloud In-Memory Fallback<br/>(Embedded Index)")]
     end
-```
 
-### Authentication & Token Flow (Secured Embed)
+    subgraph CICD["Automation & Continuous Synchronization"]
+        GHActions[".github/workflows/sync_docs_deploy.yml"]
+        SyncScript["scripts/sync_and_deploy_docs.py"]
+    end
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as End User
-    participant Browser as Web Browser (demo-secured.html)
-    participant Config as webchat-config.js
-    participant JWT as JWT Auth Server (:3001)
-    participant WxO as watsonx Orchestrate Runtime
+    WebChat -->|Secured Session| JWT
+    JWT -->|Authenticated Query| AgentBob
+    JWT -->|Authenticated Query| AgentDoc
+    CLI -->|Direct Query| VectorStore
+    Automation --> SyncScript
 
-    User->>Browser: Load secured chat application
-    Browser->>Config: Initialize wxO WebChat embed
-    WxO->>Browser: Fire 'watsonxOrchestrate:requestIdentityToken'
-    Browser->>JWT: GET /token (or /token?user_id=usr-123)
-    JWT->>JWT: Sign claims (sub, exp, iss) with RSA Private Key
-    JWT-->>Browser: Return { "token": "eyJhbGciOiJSUzI1Ni..." }
-    Browser->>WxO: Pass identityToken in session handshake
-    WxO->>WxO: Verify token against uploaded Public Key
-    WxO-->>Browser: Authenticated chat session active
+    LocalFiles --> SourceScraper
+    SourceScraper --> Chunker
+    Chunker --> VectorStore
+    VectorStore --> DiskStore
+    DiskStore -.-> EmbeddedFallback
+
+    CloudTool1 --> DiskStore
+    CloudTool1 -.->|Cloud Fallback| EmbeddedFallback
+    CloudTool2 --> DiskStore
+    CloudTool2 -.->|Cloud Fallback| EmbeddedFallback
+
+    GHActions --> SyncScript
+    SyncScript --> SourceScraper
+    SyncScript --> AgentDoc
 ```
 
 ---
 
-## 3. Prerequisites & Dependencies
+## 5. Component Descriptions & Implementation Details
+
+### 5.1 The `ibm_doc_agent` Package
+Located in [`src/agents/ibm_doc_agent/`](../src/agents/ibm_doc_agent/):
+- **`models.py`**: Strong type definitions (`Document`, `Chunk`, `SearchResult`, `AgentQueryRequest`, `AgentQueryResponse`) using Pydantic.
+- **`scraper.py`**: Fetches remote web pages or local markdown/text files, parses HTML via `BeautifulSoup`, removes noise (scripts, styles, headers/footers), and returns normalized documents.
+- **`chunker.py`**: Breaks documents into semantic segments (500 words per chunk, 50 words overlap) while preserving sentence boundaries and paragraphs.
+- **`vector_store.py`**: Implements a standalone TF-IDF vector space model with sub-linear term frequency scaling and cosine similarity search.
+- **`tools.py`**: Decorates functions with `@tool` for watsonx Orchestrate compatibility, including dual-store resilience.
+- **`agent.py`**: Provides an interactive terminal CLI conversational loop with tool calling and colored output.
+- **`openapi_spec.json`**: OpenAPI 3.0 specification enabling seamless REST endpoint import into watsonx Orchestrate.
+
+### 5.2 Semantic Chunking & Vector Engine
+The vector database is serialized to [`knowledge-bases/ibm_doc_store.json`](../knowledge-bases/ibm_doc_store.json). It currently holds **83 indexed semantic chunks** representing the complete IBM Bob documentation suite:
+- CLI Reference & Commands
+- Configuration & Environments
+- Custom Modes & Persona Customization
+- MCP (Model Context Protocol) Server Integration
+- Keyboard Shortcuts & Navigation
+- System Architecture & Extension Guide
+
+### 5.3 watsonx Orchestrate Agent & Tool Deployment
+The deployment script [`scripts/deploy_orchestrate_agent.py`](../scripts/deploy_orchestrate_agent.py) registers:
+1. `search_ibm_live_docs`: Performs high-speed vector retrieval.
+2. `get_ibm_doc_by_url`: Fetches complete section text by target URL.
+3. `ibm_doc_assistant`: The native agent entity referencing both tools with instruction system prompts.
+
+### 5.4 Enterprise Security & JWT Token Exchange
+- **Asymmetric Encryption**: RSA-256 (`RS256`) keypair in [`keys/private.pem`](../keys/private.pem) and [`keys/public.pem`](../keys/public.pem).
+- **Token Server**: Lightweight HTTP server in [`scripts/jwt_server.py`](../scripts/jwt_server.py) serving signed JWTs to the Web Chat frontend.
+- **Port Allocation**: JWT server binds to port `3000`, Web Chat binds to port `8000` (strictly avoiding reserved macOS port `5000`).
+
+### 5.5 Continuous Synchronization & CI/CD Pipeline
+- **Sync Script**: [`scripts/sync_and_deploy_docs.py`](../scripts/sync_and_deploy_docs.py) manages end-to-end documentation crawling, vector store updates, and wxO cloud redeployment.
+- **GitHub Actions**: [`.github/workflows/sync_docs_deploy.yml`](../.github/workflows/sync_docs_deploy.yml) runs daily at 02:00 UTC and supports manual dispatch.
+
+---
+
+## 6. Prerequisites & Environment Setup
 
 ### System Requirements
-- **Operating System**: macOS (ARM64/x86_64) or Linux
-- **Python**: `>= 3.10`
-- **Package Manager**: [`uv`](https://docs.astral.sh/uv/) (strongly recommended) or `python3 -m pip`
-- **OpenSSL**: CLI utility for RSA key generation
-- **IBM watsonx Orchestrate CLI**: Installed and configured via environment credentials
+- Python 3.10+
+- `uv` (recommended) or `pip`
+- OpenSSL (for RSA key generation)
+- Git
 
-### Python Dependencies ([`requirements.txt`](requirements.txt))
-- `ibm-watsonx-orchestrate` (ADK SDK)
-- `PyJWT>=2.8.0` (RS256 token encoding and verification)
-- `cryptography>=42.0.0` (Cryptographic key generation and formatting)
-- `pytest>=7.0.0` (Testing framework)
-- `python-dotenv` (Environment variable loading)
-
----
-
-## 4. Task Breakdown & Implementation Details
-
-### Task 1: Agent & Knowledge Base Architecture
-- **Objective**: Create a grounded, native watsonx Orchestrate agent capable of answering complex inquiries about IBM Bob.
-- **Implementation**:
-  - Defined [`agents/ibm_bob_assistant.agent.yaml`](agents/ibm_bob_assistant.agent.yaml) configured with system instructions, citation mandates, and tool bindings.
-  - Defined [`knowledge-bases/ibm_bob_docs.kb.yaml`](knowledge-bases/ibm_bob_docs.kb.yaml) containing 11 granular markdown/text source documents covering Bob Shell, MCP, security, modes, skills, telemetry, and enterprise configurations.
-- **Key Files**:
-  - `agents/ibm_bob_assistant.agent.yaml`
-  - `knowledge-bases/ibm_bob_docs.kb.yaml`
-  - `knowledge-bases/docs/*.txt`
-
-### Task 2: Dynamic Live Tool Integration
-- **Objective**: Provide dynamic retrieval of documentation when direct semantic RAG requires precise section lookups.
-- **Implementation**:
-  - Implemented `@tool` decorated functions in [`tools/live_bob_search.py`](tools/live_bob_search.py):
-    - `search_bob_documentation(query, limit)`: Performs indexed keyword and semantic lookups.
-    - `get_bob_doc_section(document_id, section_title)`: Extracts precise section text blocks and markdown code fences.
-- **Key Files**:
-  - `tools/live_bob_search.py`
-
-### Task 3: Automated Tool & Agent Importers with Reporting
-- **Objective**: Enable zero-downtime, idempotent deployment of tools and agent definitions into watsonx Orchestrate environments.
-- **Implementation**:
-  - [`scripts/import_tools.py`](scripts/import_tools.py): Parses Python tool modules, validates tool signatures, uploads tools to wxO, and outputs timestamped reports to `output/`.
-  - [`scripts/import_agent.py`](scripts/import_agent.py): Validates YAML schemas, resolves tool and KB dependencies, updates existing agents or provisions new ones, and produces a complete JSON audit trace.
-- **Key Files**:
-  - `scripts/import_tools.py`
-  - `scripts/import_agent.py`
-  - `Docs/IMPORT_AGENT_GUIDE.md`
-
-### Task 4: Cryptographic Key Management & RS256 JWT Server
-- **Objective**: Enable end-to-end user identity verification and token-based authentication.
-- **Implementation**:
-  - [`scripts/generate_rsa_keys.sh`](scripts/generate_rsa_keys.sh): Automated key generation script creating a 2048-bit PKCS#8 private key and public key PEM in `keys/`.
-  - [`scripts/jwt_server.py`](scripts/jwt_server.py): High-performance, lightweight HTTP server providing `/token`, `/public-key`, and `/health` endpoints with CORS support and payload customization.
-- **Key Files**:
-  - `scripts/generate_rsa_keys.sh`
-  - `scripts/jwt_server.py`
-  - `.env.example`
-
-### Task 5: Web Chat Client Implementations (Unsecured & Secured)
-- **Objective**: Deliver ready-to-embed HTML/JavaScript implementations of wxO Web Chat.
-- **Implementation**:
-  - [`web/demo-unsecured.html`](web/demo-unsecured.html): Single-script embed for public, anonymous assistant access with inline code tabs.
-  - [`web/demo-secured.html`](web/demo-secured.html): Secured client implementing `onCustomEvent` and `watsonxOrchestrate:requestIdentityToken` lifecycle hooks, complete with live JWT token inspection UI.
-  - [`web/webchat-config.js.template`](web/webchat-config.js.template) and [`scripts/_generate_webchat_config.py`](scripts/_generate_webchat_config.py): Dynamic runtime config generation from environment variables.
-- **Key Files**:
-  - `web/demo-unsecured.html`
-  - `web/demo-secured.html`
-  - `web/webchat-config.js`
-  - `Docs/WebChat_Integration_Guide.md`
-
-### Task 6: Lifecycle Automation & Management Scripts
-- **Objective**: Standardize environment startup, teardown, serving, and cleaning in compliance with project automation rules.
-- **Implementation**:
-  - [`scripts/start.sh`](scripts/start.sh): Idempotent 9-step deployment pipeline (environment check, venv provisioning, dependency installation, key generation, tool import, agent import, and background service execution).
-  - [`scripts/stop.sh`](scripts/stop.sh): Clean shutdown of background servers and optional cloud resource undeploy.
-  - [`scripts/serve.sh`](scripts/serve.sh): CLI switcher for serving documentation, demo portals, or slide decks.
-  - [`scripts/cleanup.sh`](scripts/cleanup.sh): Resets workspace by removing temporary artifacts, virtual environments, and caches.
-- **Key Files**:
-  - `scripts/start.sh`
-  - `scripts/stop.sh`
-  - `scripts/serve.sh`
-  - `scripts/cleanup.sh`
-
-### Task 7: Test Suite & Quality Assurance Verification
-- **Objective**: Ensure robustness and regression prevention across all automation and tool logic.
-- **Implementation**:
-  - Full suite of pytest tests verifying tool execution, import error handling, schema validations, and mock wxO API responses.
-- **Key Files**:
-  - `tests/test_live_bob_search.py` (31 unit tests)
-  - `tests/test_import_tools.py` (56 unit tests)
-  - `tests/test_import_agent.py` (54 unit tests)
-  - `tests/test_generate_webchat_config.py`
-
-### Task 8: Interactive HTML5 Slide Deck & Documentation Portals
-- **Objective**: Provide visual stakeholder presentations and developer reference hubs.
-- **Implementation**:
-  - [`web/deck/index.html`](web/deck/index.html): 20 modular HTML slides styled with IBM Carbon Design tokens, keyboard navigation, and responsive layouts.
-  - [`web/embed-docs.html`](web/embed-docs.html): Developer hub detailing security modes, configuration parameters, and error resolution.
-- **Key Files**:
-  - `web/deck/index.html`
-  - `web/deck/slides/slide-*.html`
-  - `web/embed-docs.html`
-
-### Task 9: Live Documentation Scraper & Ingestion Pipeline Agent
-- **Objective**: Build a standalone, independent Python agent (`IBM_Doc_Assistant`) that scrapes, normalizes, chunks, vectorizes, and indexes live IBM documentation into a vector knowledge store with automated wxO deployment.
-- **Implementation**:
-  - [`src/agents/ibm_doc_agent/scraper.py`](src/agents/ibm_doc_agent/scraper.py): Crawler with exponential backoff and structured HTML extraction.
-  - [`src/agents/ibm_doc_agent/chunker.py`](src/agents/ibm_doc_agent/chunker.py): Context-preserving text chunker with token estimation and SHA-256 chunk IDs.
-  - [`src/agents/ibm_doc_agent/vector_store.py`](src/agents/ibm_doc_agent/vector_store.py): Cosine similarity vector index.
-  - [`src/agents/ibm_doc_agent/tools.py`](src/agents/ibm_doc_agent/tools.py): Custom `@tool` functions (`search_ibm_live_docs`, `get_ibm_doc_by_url`).
-  - [`scripts/ingest_docs.py`](scripts/ingest_docs.py): Standalone CLI ingestion pipeline.
-  - [`scripts/deploy_orchestrate_agent.py`](scripts/deploy_orchestrate_agent.py): Automated tool registration and agent import runner.
-- **Key Files**:
-  - `src/agents/ibm_doc_agent/`
-  - `agents/ibm_doc_assistant.agent.yaml`
-  - `knowledge-bases/ibm_doc_store.kb.yaml`
-  - `scripts/ingest_docs.py`
-  - `scripts/deploy_orchestrate_agent.py`
-  - `Docs/New_Agent_Documentation.md`
-
----
-
-## 5. Configuration & Environment Reference
-
-### Environment Variables Template (`.env`)
-
-```ini
-# ==============================================================================
-# IBM watsonx Orchestrate & Deployment Configuration
-# ==============================================================================
-
-# Local Server Settings
-JWT_PORT=3001
-WEB_PORT=8000
-HOST=127.0.0.1
-
-# watsonx Orchestrate Integration Parameters
-WXO_INTEGRATION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-WXO_REGION=us-south
-WXO_SERVICE_INSTANCE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-WXO_AGENT_ID=ibm_bob_assistant
-
-# Security & Cryptography
-PRIVATE_KEY_PATH=keys/wxo_embed_private.pem
-PUBLIC_KEY_PATH=keys/wxo_embed_public.pem
-JWT_EXPIRATION_MINUTES=60
-JWT_ISSUER=wxo-embed-service
-
-# Logging & Environment
-LOG_LEVEL=INFO
-ENVIRONMENT=development
-```
-
----
-
-## 6. Operational Runbooks & Usage Instructions
-
-### Quick Start: Launching the Entire Stack
-
+### Quick Setup
 ```bash
-# 1. Clone repository and copy environment configuration
+# 1. Clone repository and navigate to project root
+cd /path/to/wxO-IBM
+
+# 2. Run master setup command
+./scripts/automate.sh setup
+
+# 3. Configure credentials
 cp .env.example .env
-# Edit .env with your watsonx Orchestrate instance credentials
-
-# 2. Execute the full deployment pipeline
-chmod +x scripts/*.sh
-./scripts/start.sh
+# Edit .env with your IBM Cloud credentials
 ```
 
-### Running Test Verification
+---
+
+## 7. Comprehensive Usage Instructions
+
+### 7.1 Using the Master Automation Script (`automate.sh`)
+
+[`scripts/automate.sh`](../scripts/automate.sh) provides a unified CLI for all lifecycle operations:
 
 ```bash
-# Execute pytest across all test suites
-source .venv/bin/activate
-pytest tests/ -v
+# Setup environment and dependencies
+./scripts/automate.sh setup
+
+# Run document ingestion and rebuild vector store
+./scripts/automate.sh ingest
+
+# Deploy tools and agents to watsonx Orchestrate
+./scripts/automate.sh deploy
+
+# Execute full sync, re-indexing, and deployment
+./scripts/automate.sh refresh
+
+# Start JWT auth server and web chat interface
+./scripts/automate.sh serve
+
+# Launch terminal chat session
+./scripts/automate.sh chat
+
+# Inspect system status and cloud agent status
+./scripts/automate.sh status
+
+# Run automated unit tests
+./scripts/automate.sh test
+
+# Clean temporary build and bytecode files
+./scripts/automate.sh clean
 ```
 
-### Accessing Project Interfaces
-
-| Interface | URL / Location | Description |
-| :--- | :--- | :--- |
-| **Main Portal** | `http://localhost:8000/` | Entry point for testing both chat modes and tools. |
-| **Secured Chat Demo** | `http://localhost:8000/demo-secured.html` | Live webchat with active RS256 identity verification. |
-| **Unsecured Chat Demo** | `http://localhost:8000/demo-unsecured.html` | Anonymous public embed example. |
-| **Technical Slide Deck** | `http://localhost:8000/deck/index.html` | 20-slide architectural and delivery presentation. |
-| **JWT Server Health** | `http://localhost:3001/health` | Healthcheck endpoint for token generation service. |
-
-### Graceful Teardown
-
+### 7.2 Running the Interactive Terminal CLI Agent
 ```bash
+./scripts/automate.sh chat
+```
+Example session:
+```text
+=== IBM Documentation Assistant CLI ===
+Enter your query (or 'quit' to exit): What modes are available in Bob?
+
+[SEARCHING] Searching knowledge base for: What modes are available in Bob?...
+Found 3 relevant sections:
+
+--- Section 1 (Score: 0.884) ---
+Source: https://bob.ibm.com/docs/custom-modes.html
+Content: IBM Bob provides multiple specialized modes: Agent Mode for code creation, Plan Mode for architecture, and custom modes defined in custom_modes.yaml...
+```
+
+### 7.3 Running the Local Web Chat Application
+```bash
+# Start background services
+./scripts/automate.sh serve
+
+# The application is accessible at:
+# Web Chat UI:   http://localhost:8000
+# JWT Server:    http://localhost:3000
+
+# Stop services gracefully
 ./scripts/stop.sh
 ```
 
 ---
 
-## 7. Security Guidelines & Best Practices
+## 8. Configuration Details & Environment Variables
 
-1. **Private Key Protection**: Never commit files in `keys/` or `.env` to source control. The `.gitignore` file is explicitly configured to block `.pem`, `.env`, and private directories.
-2. **Asymmetric Verification**: Use RS256 for all browser-facing identity handshakes. The private key remains secured in the local backend; only the public key is provided to watsonx Orchestrate.
-3. **Token Expiration & Refresh**: Configure token lifespans between 15 and 60 minutes. Use the `watsonxOrchestrate:requestIdentityToken` callback to handle seamless mid-session renewals.
-4. **Tenant & Identity Claims**: Always populate standard claims (`sub`, `iss`, `iat`, `exp`) and custom role/permission attributes in [`scripts/jwt_server.py`](scripts/jwt_server.py) to ensure proper authorization enforcement inside wxO skills.
+| Variable | Description | Example / Default |
+|:---|:---|:---|
+| `WO_BEARER_TOKEN` | IBM Cloud IAM OAuth Bearer Token | `eyJraWQiOi...` |
+| `WO_INSTANCE_ID` | watsonx Orchestrate Tenant Instance ID | `75c2cabb-2b02-4d65-8127-a9cc65d1ee46` |
+| `WO_ENVIRONMENT` | watsonx Orchestrate API Base URL | `https://api.eu-de.watson-orchestrate.cloud.ibm.com` |
+| `WO_AGENT_ID` | Agent Identifier for `ibm_doc_assistant` | `273c6294-f254-46c5-a9b0-d5be86dd4ec3` |
+| `PORT` | JWT Security Server Port | `3000` |
+| `WEB_PORT` | Static Web Chat UI Port | `8000` |
 
 ---
 
-## 8. Cross-Reference & Artifact Index
+## 9. Testing, Validation & Verification Results
 
-- **Documentation**:
-  - Quickstart Guide: [`Docs/Quickstart.md`](Docs/Quickstart.md)
-  - Deployment Reference: [`Docs/Deployment.md`](Docs/Deployment.md)
-  - IBM Doc Agent Guide: [`Docs/New_Agent_Documentation.md`](Docs/New_Agent_Documentation.md)
-  - Unified Documentation Portal: [`Docs/Documentation.html`](Docs/Documentation.html)
-  - Web Chat Integration Guide: [`Docs/WebChat_Integration_Guide.md`](Docs/WebChat_Integration_Guide.md)
-  - Agent Importer Manual: [`Docs/IMPORT_AGENT_GUIDE.md`](Docs/IMPORT_AGENT_GUIDE.md)
-  - Knowledge Base Diagnostics: [`Docs/KnowledgeSource.md`](Docs/KnowledgeSource.md)
-- **Source Code**:
-  - Python Tools: [`tools/live_bob_search.py`](tools/live_bob_search.py), [`src/agents/ibm_doc_agent/tools.py`](src/agents/ibm_doc_agent/tools.py)
-  - Agent Definitions: [`agents/ibm_bob_assistant.agent.yaml`](agents/ibm_bob_assistant.agent.yaml), [`agents/ibm_doc_assistant.agent.yaml`](agents/ibm_doc_assistant.agent.yaml)
-  - Knowledge Base Config: [`knowledge-bases/ibm_bob_docs.kb.yaml`](knowledge-bases/ibm_bob_docs.kb.yaml), [`knowledge-bases/ibm_doc_store.kb.yaml`](knowledge-bases/ibm_doc_store.kb.yaml)
-- **Automation Scripts**:
-  - Pipeline Launcher: [`scripts/start.sh`](scripts/start.sh)
-  - Pipeline Teardown: [`scripts/stop.sh`](scripts/stop.sh)
-  - Ingestion Pipeline: [`scripts/ingest_docs.py`](scripts/ingest_docs.py)
-  - Agent Deployer: [`scripts/deploy_orchestrate_agent.py`](scripts/deploy_orchestrate_agent.py)
-  - RSA Key Generator: [`scripts/generate_rsa_keys.sh`](scripts/generate_rsa_keys.sh)
-  - JWT Server: [`scripts/jwt_server.py`](scripts/jwt_server.py)
-  - HTTP Server: [`scripts/serve.sh`](scripts/serve.sh)
-  - Cleanup Utility: [`scripts/cleanup.sh`](scripts/cleanup.sh)
+All components are covered by comprehensive unit tests located in [`tests/`](../tests/):
+
+```bash
+./scripts/automate.sh test
+```
+
+### Test Suite Execution Output
+```text
+test_chunker_custom_window (tests.test_ibm_doc_agent.TestIBMDocAgent.test_chunker_custom_window) ... ok
+test_chunker_empty_input (tests.test_ibm_doc_agent.TestIBMDocAgent.test_chunker_empty_input) ... ok
+test_chunker_sentence_splitting (tests.test_ibm_doc_agent.TestIBMDocAgent.test_chunker_sentence_splitting) ... ok
+test_models_serialization (tests.test_ibm_doc_agent.TestIBMDocAgent.test_models_serialization) ... ok
+test_scraper_clean_html (tests.test_ibm_doc_agent.TestIBMDocAgent.test_scraper_clean_html) ... ok
+test_scraper_local_file (tests.test_ibm_doc_agent.TestIBMDocAgent.test_scraper_local_file) ... ok
+test_tools_get_ibm_doc_by_url (tests.test_ibm_doc_agent.TestIBMDocAgent.test_tools_get_ibm_doc_by_url) ... ok
+test_tools_search_ibm_live_docs (tests.test_ibm_doc_agent.TestIBMDocAgent.test_tools_search_ibm_live_docs) ... ok
+test_vector_store_persistence (tests.test_ibm_doc_agent.TestIBMDocAgent.test_vector_store_persistence) ... ok
+test_vector_store_search_accuracy (tests.test_ibm_doc_agent.TestIBMDocAgent.test_vector_store_search_accuracy) ... ok
+test_pipeline_reindex (tests.test_sync_and_deploy_docs.TestSyncAndDeployDocs.test_pipeline_reindex) ... ok
+test_sync_and_deploy_cli_args (tests.test_sync_and_deploy_docs.TestSyncAndDeployDocs.test_sync_and_deploy_cli_args) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.428s
+
+OK
+```
+
+---
+
+## 10. Technical Assets & Cross-References
+
+- **System Architecture Blueprint**: [`Docs/ARCHITECTURE.md`](ARCHITECTURE.md)
+- **Knowledge Base Refresh & Cron Setup**: [`Docs/KNOWLEDGE_BASE_REFRESH.md`](KNOWLEDGE_BASE_REFRESH.md)
+- **Deployment & Troubleshooting Guide**: [`Docs/WATSONX_ORCHESTRATE_DEPLOYMENT.md`](WATSONX_ORCHESTRATE_DEPLOYMENT.md)
+- **Interactive Documentation Asset**: [`Docs/Documentation.html`](Documentation.html)
+- **Quickstart Guide**: [`Docs/Quickstart.md`](Quickstart.md)
+- **Master Automation CLI**: [`scripts/automate.sh`](../scripts/automate.sh)
