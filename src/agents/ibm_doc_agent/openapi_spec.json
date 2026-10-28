@@ -1,0 +1,103 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "IBM Doc Agent Live Tools",
+    "description": "Semantic retrieval and document inspection tools for live indexed IBM documentation.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.watsonx.orchestrate.ibm.com",
+      "description": "watsonx Orchestrate Tool Runtime"
+    }
+  ],
+  "paths": {
+    "/tools/search_ibm_live_docs": {
+      "post": {
+        "summary": "Search indexed live IBM documentation",
+        "description": "Searches the vector store of indexed IBM documentation and returns relevant passages with citations.",
+        "operationId": "search_ibm_live_docs",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search keyword or natural language question."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of results to retrieve (default: 5).",
+                    "default": 5
+                  }
+                },
+                "required": ["query"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching documentation passages with source URLs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/get_ibm_doc_by_url": {
+      "post": {
+        "summary": "Retrieve document by URL",
+        "description": "Retrieves extracted documentation sections matching an exact URL.",
+        "operationId": "get_ibm_doc_by_url",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The exact URL of the IBM documentation page."
+                  }
+                },
+                "required": ["url"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document text and section breakdown.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "content": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

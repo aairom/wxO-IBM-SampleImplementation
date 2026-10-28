@@ -309,6 +309,7 @@
       <li><a href="#task-6">Task 6: Automation Scripts</a></li>
       <li><a href="#task-7">Task 7: Test Suite</a></li>
       <li><a href="#task-8">Task 8: Slide Deck & Hubs</a></li>
+      <li><a href="#task-9">Task 9: IBM Doc Scraper & Agent</a></li>
       
       <div class="nav-group-title">Operations & Reference</div>
       <li><a href="#configuration">5. Configuration & Env</a></li>
@@ -387,6 +388,11 @@
             <td><strong>Presentations & Hubs</strong></td>
             <td>20-slide IBM Carbon presentation deck and developer documentation portal.</td>
             <td><code>web/deck/index.html</code>, <code>web/embed-docs.html</code></td>
+          </tr>
+          <tr>
+            <td><strong>IBM Doc Agent & Ingestion</strong></td>
+            <td>Live documentation scraper, chunker, vector indexer, and deployment pipeline.</td>
+            <td><code>src/agents/ibm_doc_agent/</code>, <code>scripts/ingest_docs.py</code>, <code>scripts/deploy_orchestrate_agent.py</code></td>
           </tr>
         </tbody>
       </table>
@@ -531,6 +537,18 @@ uv pip install -r requirements.txt</code></pre>
       <p>
         Built an interactive HTML5 presentation deck (<code>web/deck/index.html</code>) featuring 20 modular slides designed with IBM Carbon Design tokens, keyboard navigation, and responsive typography.
       </p>
+    </section>
+
+    <section id="task-9">
+      <h2>Task 9: Live Documentation Scraper & Ingestion Pipeline Agent</h2>
+      <p>
+        Implemented an independent Python-based agent (<code>IBM_Doc_Assistant</code>) and ingestion pipeline in <code>src/agents/ibm_doc_agent/</code>:
+      </p>
+      <ul>
+        <li><code>IBMDocScraper</code> & <code>TextChunker</code>: Scrapes live IBM documentation, extracts hierarchical sections, and preserves metadata.</li>
+        <li><code>VectorStore</code>: Cosine similarity vector index supporting local and watsonx.ai embeddings.</li>
+        <li><code>deploy_orchestrate_agent.py</code>: One-step registration script with JSON audit logs in <code>output/</code>.</li>
+      </ul>
     </section>
 
     <!-- Configuration -->

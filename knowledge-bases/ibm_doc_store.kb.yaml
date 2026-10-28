@@ -1,0 +1,13 @@
+spec_version: v1
+kind: knowledge_base
+name: ibm_doc_store
+description: >
+  Live indexed IBM documentation knowledge base scraped and ingested by
+  the IBM Documentation Assistant ingestion pipeline (src/agents/ibm_doc_agent/).
+  Covers IBM watsonx Orchestrate, watsonx.ai, foundation models, agents, and cloud platform tools.
+documents:
+  - path: ibm_doc_store.json
+conversational_search_tool:
+  query_source: Agent
+  generation:
+    enabled: false

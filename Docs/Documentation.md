@@ -18,6 +18,7 @@
    - [Task 6: Lifecycle Automation & Management Scripts](#task-6-lifecycle-automation--management-scripts)
    - [Task 7: Test Suite & Quality Assurance Verification](#task-7-test-suite--quality-assurance-verification)
    - [Task 8: Interactive HTML5 Slide Deck & Documentation Portals](#task-8-interactive-html5-slide-deck--documentation-portals)
+   - [Task 9: Live Documentation Scraper & Ingestion Pipeline Agent](#task-9-live-documentation-scraper--ingestion-pipeline-agent)
 5. [Configuration & Environment Reference](#5-configuration--environment-reference)
 6. [Operational Runbooks & Usage Instructions](#6-operational-runbooks--usage-instructions)
 7. [Security Guidelines & Best Practices](#7-security-guidelines--best-practices)
@@ -41,6 +42,7 @@ This project delivers a complete enterprise-grade implementation of the **IBM Bo
 | **Lifecycle & Operations** | 9-step idempotent pipeline startup, graceful shutdown, and project cleanup scripts. | [`scripts/start.sh`](scripts/start.sh), [`scripts/stop.sh`](scripts/stop.sh), [`scripts/serve.sh`](scripts/serve.sh), [`scripts/cleanup.sh`](scripts/cleanup.sh) |
 | **Automated Testing** | Comprehensive unit test suite covering tool logic, importer scripts, and embed generators (140+ unit tests). | [`tests/test_live_bob_search.py`](tests/test_live_bob_search.py), [`tests/test_import_tools.py`](tests/test_import_tools.py), [`tests/test_import_agent.py`](tests/test_import_agent.py) |
 | **Presentations & Docs** | 20-slide IBM Carbon-styled HTML presentation deck and interactive embed documentation hubs. | [`web/deck/index.html`](web/deck/index.html), [`web/embed-docs.html`](web/embed-docs.html), [`Docs/`](Docs/) |
+| **IBM Doc Agent & Pipeline** | Live web scraping, chunking, vector indexing, and automated wxO agent deployment pipeline. | [`src/agents/ibm_doc_agent/`](src/agents/ibm_doc_agent/), [`scripts/ingest_docs.py`](scripts/ingest_docs.py), [`scripts/deploy_orchestrate_agent.py`](scripts/deploy_orchestrate_agent.py) |
 
 ---
 
@@ -206,6 +208,23 @@ sequenceDiagram
   - `web/deck/slides/slide-*.html`
   - `web/embed-docs.html`
 
+### Task 9: Live Documentation Scraper & Ingestion Pipeline Agent
+- **Objective**: Build a standalone, independent Python agent (`IBM_Doc_Assistant`) that scrapes, normalizes, chunks, vectorizes, and indexes live IBM documentation into a vector knowledge store with automated wxO deployment.
+- **Implementation**:
+  - [`src/agents/ibm_doc_agent/scraper.py`](src/agents/ibm_doc_agent/scraper.py): Crawler with exponential backoff and structured HTML extraction.
+  - [`src/agents/ibm_doc_agent/chunker.py`](src/agents/ibm_doc_agent/chunker.py): Context-preserving text chunker with token estimation and SHA-256 chunk IDs.
+  - [`src/agents/ibm_doc_agent/vector_store.py`](src/agents/ibm_doc_agent/vector_store.py): Cosine similarity vector index.
+  - [`src/agents/ibm_doc_agent/tools.py`](src/agents/ibm_doc_agent/tools.py): Custom `@tool` functions (`search_ibm_live_docs`, `get_ibm_doc_by_url`).
+  - [`scripts/ingest_docs.py`](scripts/ingest_docs.py): Standalone CLI ingestion pipeline.
+  - [`scripts/deploy_orchestrate_agent.py`](scripts/deploy_orchestrate_agent.py): Automated tool registration and agent import runner.
+- **Key Files**:
+  - `src/agents/ibm_doc_agent/`
+  - `agents/ibm_doc_assistant.agent.yaml`
+  - `knowledge-bases/ibm_doc_store.kb.yaml`
+  - `scripts/ingest_docs.py`
+  - `scripts/deploy_orchestrate_agent.py`
+  - `Docs/New_Agent_Documentation.md`
+
 ---
 
 ## 5. Configuration & Environment Reference
@@ -295,16 +314,20 @@ pytest tests/ -v
 - **Documentation**:
   - Quickstart Guide: [`Docs/Quickstart.md`](Docs/Quickstart.md)
   - Deployment Reference: [`Docs/Deployment.md`](Docs/Deployment.md)
+  - IBM Doc Agent Guide: [`Docs/New_Agent_Documentation.md`](Docs/New_Agent_Documentation.md)
+  - Unified Documentation Portal: [`Docs/Documentation.html`](Docs/Documentation.html)
   - Web Chat Integration Guide: [`Docs/WebChat_Integration_Guide.md`](Docs/WebChat_Integration_Guide.md)
   - Agent Importer Manual: [`Docs/IMPORT_AGENT_GUIDE.md`](Docs/IMPORT_AGENT_GUIDE.md)
   - Knowledge Base Diagnostics: [`Docs/KnowledgeSource.md`](Docs/KnowledgeSource.md)
 - **Source Code**:
-  - Python Tools: [`tools/live_bob_search.py`](tools/live_bob_search.py)
-  - Agent Definition: [`agents/ibm_bob_assistant.agent.yaml`](agents/ibm_bob_assistant.agent.yaml)
-  - Knowledge Base Config: [`knowledge-bases/ibm_bob_docs.kb.yaml`](knowledge-bases/ibm_bob_docs.kb.yaml)
+  - Python Tools: [`tools/live_bob_search.py`](tools/live_bob_search.py), [`src/agents/ibm_doc_agent/tools.py`](src/agents/ibm_doc_agent/tools.py)
+  - Agent Definitions: [`agents/ibm_bob_assistant.agent.yaml`](agents/ibm_bob_assistant.agent.yaml), [`agents/ibm_doc_assistant.agent.yaml`](agents/ibm_doc_assistant.agent.yaml)
+  - Knowledge Base Config: [`knowledge-bases/ibm_bob_docs.kb.yaml`](knowledge-bases/ibm_bob_docs.kb.yaml), [`knowledge-bases/ibm_doc_store.kb.yaml`](knowledge-bases/ibm_doc_store.kb.yaml)
 - **Automation Scripts**:
   - Pipeline Launcher: [`scripts/start.sh`](scripts/start.sh)
   - Pipeline Teardown: [`scripts/stop.sh`](scripts/stop.sh)
+  - Ingestion Pipeline: [`scripts/ingest_docs.py`](scripts/ingest_docs.py)
+  - Agent Deployer: [`scripts/deploy_orchestrate_agent.py`](scripts/deploy_orchestrate_agent.py)
   - RSA Key Generator: [`scripts/generate_rsa_keys.sh`](scripts/generate_rsa_keys.sh)
   - JWT Server: [`scripts/jwt_server.py`](scripts/jwt_server.py)
   - HTTP Server: [`scripts/serve.sh`](scripts/serve.sh)

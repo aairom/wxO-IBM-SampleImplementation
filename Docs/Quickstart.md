@@ -58,6 +58,25 @@ venv/bin/orchestrate chat ask --agent-name ibm_bob_assistant
 | Query | Expected behaviour |
 |-------|-------------------|
 | `What is IBM Bob?` | Overview + source citation |
+
+---
+
+## IBM Documentation Assistant (`IBM_Doc_Assistant`)
+
+For the live documentation scraping and vector indexing agent:
+
+```bash
+# 1. Ingest live documentation
+python3 scripts/ingest_docs.py
+
+# 2. Deploy agent and tools
+python3 scripts/deploy_orchestrate_agent.py
+
+# 3. Test agent query
+venv/bin/orchestrate chat ask --agent-name ibm_doc_assistant
+```
+
+See [`Docs/New_Agent_Documentation.md`](./New_Agent_Documentation.md) for full details.
 | `What can Bob Shell do?` | Terminal capabilities |
 | `How do Bobcoins work?` | Budget tiers, monthly reset |
 | `What are Enterprise plan features?` | Admin dashboard, Bobalytics |

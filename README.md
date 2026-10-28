@@ -41,9 +41,22 @@ flowchart TD
 ```
 wxO-IBM/
 ├── agents/
-│   └── ibm_bob_assistant.agent.yaml   # Agent definition (native, react_core)
+│   ├── ibm_bob_assistant.agent.yaml   # IBM Bob agent definition (native, react_core)
+│   └── ibm_doc_assistant.agent.yaml   # IBM Doc Assistant agent definition
+├── src/agents/ibm_doc_agent/          # IBM Documentation Agent & Ingestion package
+│   ├── __init__.py                    # Package marker
+│   ├── models.py                      # Data models (ScrapedDocument, DocumentChunk)
+│   ├── scraper.py                     # Live HTML web crawler & parser (BeautifulSoup)
+│   ├── chunker.py                     # Semantic text chunker & token estimator
+│   ├── vector_store.py                # Vector embedding store & cosine similarity engine
+│   ├── tools.py                       # wxO ADK tools (search_ibm_live_docs, get_ibm_doc_by_url)
+│   ├── agent.py                       # Python agent execution & response synthesis engine
+│   ├── openapi_spec.json              # OpenAPI 3.0 tool specification
+│   └── .env.example                   # Dedicated agent environment variable template
 ├── knowledge-bases/
-│   ├── ibm_bob_docs.kb.yaml           # KB definition (11 .txt docs)
+│   ├── ibm_bob_docs.kb.yaml           # IBM Bob KB definition (11 .txt docs)
+│   ├── ibm_doc_store.kb.yaml          # IBM Doc Assistant KB definition
+│   ├── ibm_doc_store.json             # Vector store index for live IBM docs
 │   └── docs/                          # Real IBM Bob doc content (.txt)
 │       ├── 01_overview.txt … 11_bobalytics.txt
 ├── tools/
@@ -64,15 +77,23 @@ wxO-IBM/
 │   ├── get_webchat_embed.sh           # Regenerate web/webchat-config.js
 │   ├── import_tools.py                # Import Python tools + report
 │   ├── import_agent.py                # Import / re-import agent + JSON report
-│   └── fetch_ibm_bob_docs.py          # Refresh KB docs from Bob search API
+│   ├── fetch_ibm_bob_docs.py          # Refresh KB docs from Bob search API
+│   ├── ingest_docs.py                 # Scrape, chunk & vectorize live IBM documentation
+│   └── deploy_orchestrate_agent.py    # Automated agent & tool deployment for wxO
 ├── keys/                              # GITIGNORED — RSA key pair (created by generate_rsa_keys.sh)
 ├── tests/
 │   ├── test_live_bob_search.py        # 31 unit tests
 │   ├── test_import_tools.py           # 56 unit tests
-│   └── test_import_agent.py           # 54 unit tests
+│   ├── test_import_agent.py           # 54 unit tests
+│   ├── test_generate_webchat_config.py# Webchat config generator tests
+│   └── test_ibm_doc_agent.py          # 6 unit tests (scraper, chunker, vector store, agent)
 ├── Docs/
 │   ├── Quickstart.md                  # 5-minute fast-path
 │   ├── Deployment.md                  # Full deployment reference
+│   ├── Documentation.md               # Unified technical documentation (Markdown)
+│   ├── Documentation.html             # Unified interactive portal (HTML)
+│   ├── New_Agent_Documentation.md     # Dedicated IBM Doc Agent guide (Markdown)
+│   ├── New_Agent_Documentation.html   # Dedicated IBM Doc Agent guide (HTML)
 │   ├── WebChat_Integration_Guide.md   # Embed chat integration (unsecured + secured)
 │   ├── KnowledgeSource.md             # Knowledge source diagnostics
 │   └── IMPORT_AGENT_GUIDE.md          # import_agent.py developer & ops guide
